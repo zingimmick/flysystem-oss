@@ -31,13 +31,25 @@ final class OssAdapterTest extends FilesystemAdapterTestCase
         ) ?: '', 'github-test');
     }
 
+    /**
+     * @var \League\Flysystem\FilesystemAdapter
+     */
+    private $filesystemAdapter;
+
     protected function setUp(): void
     {
         if ((string) getenv('MOCK') !== 'false') {
             self::markTestSkipped('Mock tests enabled');
         }
 
+        $this->filesystemAdapter = self::createFilesystemAdapter();
+
         parent::setUp();
+    }
+
+    public function adapter(): FilesystemAdapter
+    {
+        return $this->filesystemAdapter;
     }
 
     protected function tearDown(): void
