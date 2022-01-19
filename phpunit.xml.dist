@@ -11,7 +11,7 @@
         verbose="true"
 >
     <testsuites>
-        <testsuite name="Package Skeleton PHP Test Suite">
+        <testsuite name="Flysystem OSS Test Suite">
             <directory>./tests</directory>
         </testsuite>
     </testsuites>
