@@ -354,7 +354,7 @@ class OssAdapter implements FilesystemAdapter
 
         return new FileAttributes(
             $path,
-            isset($metadata['content-length']) ? (int) $metadata['content-length'] : ($metadata['size']??null),
+            isset($metadata['content-length']) ? (int) $metadata['content-length'] : ($metadata['size'] ?? null),
             null,
             $lastModified,
             $metadata['content-type'] ?? null,
