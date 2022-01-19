@@ -1,0 +1,65 @@
+{
+    "name": "zing/package-skeleton-php",
+    "description": "A skeleton repository for PHP Packages",
+    "keywords": ["php", "package", "skeleton"],
+    "license": "MIT",
+    "homepage": "https://github.com/zingimmick/package-skeleton-php",
+    "support": {
+        "issues": "https://github.com/zingimmick/package-skeleton-php/issues",
+        "source": "https://github.com/zingimmick/package-skeleton-php"
+    },
+    "authors": [
+        {
+            "name": "zingimmick",
+            "email": "zingimmick@outlook.com",
+            "homepage": "https://github.com/zingimmick"
+        }
+    ],
+    "config": {
+        "sort-packages": true,
+        "preferred-install": "dist",
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    },
+    "require": {
+        "php": "^7.2 || ^8.0"
+    },
+    "require-dev": {
+        "phpstan/phpstan": "^1.0",
+        "phpunit/phpunit": "^8.0,<8.5.12 || ^9.3.3",
+        "zing/coding-standard": "^5.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Zing\\Skeleton\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Zing\\Skeleton\\Tests\\": "tests"
+        }
+    },
+    "scripts": {
+        "lint:rector": "@fix:rector --dry-run",
+        "lint:ecs": "ecs check --ansi",
+        "lint:phpstan": "phpstan analyse --ansi",
+        "fix:rector": "rector process --ansi",
+        "fix:ecs": "@lint:ecs --fix",
+        "test:phpunit": "phpunit --colors=always",
+        "lint": [
+            "@lint:rector",
+            "@lint:ecs",
+            "@lint:phpstan"
+        ],
+        "fix": [
+            "@fix:rector",
+            "@fix:ecs"
+        ],
+        "test": [
+            "@test:phpunit"
+        ]
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
