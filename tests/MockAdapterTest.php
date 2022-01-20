@@ -90,9 +90,7 @@ final class MockAdapterTest extends TestCase
                 'file.txt',
                 'test',
                 'copy.txt',
-                [
-                    OssClient::OSS_OBJECT_ACL => 'public-read',
-                ],
+                [],
             ])->andThrow(new \OSS\Core\OssException('mock test'));
         $this->mockGetVisibility('file.txt', Visibility::PUBLIC);
         $this->expectException(UnableToCopyFile::class);
