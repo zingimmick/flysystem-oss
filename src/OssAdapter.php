@@ -25,9 +25,9 @@ use League\Flysystem\UnableToSetVisibility;
 use League\Flysystem\UnableToWriteFile;
 use League\MimeTypeDetection\FinfoMimeTypeDetector;
 use League\MimeTypeDetection\MimeTypeDetector;
+use OSS\Core\OssException;
 use OSS\OssClient;
 use Psr\Http\Message\UriInterface;
-use OSS\Core\OssException;
 
 class OssAdapter implements FilesystemAdapter
 {
@@ -183,8 +183,8 @@ class OssAdapter implements FilesystemAdapter
                 $this->pathPrefixer->prefixPath($destination),
                 $this->createOptionsFromConfig($config)
             );
-        } catch (OssException $exception) {
-            throw UnableToCopyFile::fromLocationTo($source, $destination, $exception);
+        } catch (OssException $ossException) {
+            throw UnableToCopyFile::fromLocationTo($source, $destination, $ossException);
         }
     }
 
@@ -214,8 +214,8 @@ class OssAdapter implements FilesystemAdapter
                 'visibility' => $this->visibilityConverter->defaultForDirectories(),
             ]);
             $this->write(trim($path, '/') . '/', '', $config);
-        } catch (FilesystemOperationFailed $exception) {
-            throw UnableToCreateDirectory::dueToFailure($path, $exception);
+        } catch (FilesystemOperationFailed $filesystemOperationFailed) {
+            throw UnableToCreateDirectory::dueToFailure($path, $filesystemOperationFailed);
         }
     }
 
