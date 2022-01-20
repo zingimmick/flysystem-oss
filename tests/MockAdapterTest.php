@@ -91,7 +91,6 @@ final class MockAdapterTest extends TestCase
                 'test',
                 'copy.txt',
                 [
-                    OssClient::OSS_OBJECT_ACL => 'public-read',
                 ],
             ])->andThrow(new \OSS\Core\OssException('mock test'));
         $this->mockGetVisibility('file.txt', Visibility::PUBLIC);

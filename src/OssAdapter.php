@@ -27,7 +27,7 @@ use League\MimeTypeDetection\FinfoMimeTypeDetector;
 use League\MimeTypeDetection\MimeTypeDetector;
 use OSS\OssClient;
 use Psr\Http\Message\UriInterface;
-use Throwable;
+use OSS\Core\OssException;
 
 class OssAdapter implements FilesystemAdapter
 {
@@ -158,7 +158,7 @@ class OssAdapter implements FilesystemAdapter
 
         try {
             $this->client->putObject($this->bucket, $this->pathPrefixer->prefixPath($path), $contents, $options);
-        } catch (Throwable $ossException) {
+        } catch (OssException $ossException) {
             throw UnableToWriteFile::atLocation($path, '', $ossException);
         }
     }
@@ -183,7 +183,7 @@ class OssAdapter implements FilesystemAdapter
                 $this->pathPrefixer->prefixPath($destination),
                 $this->createOptionsFromConfig($config)
             );
-        } catch (Throwable $exception) {
+        } catch (OssException $exception) {
             throw UnableToCopyFile::fromLocationTo($source, $destination, $exception);
         }
     }
@@ -192,8 +192,8 @@ class OssAdapter implements FilesystemAdapter
     {
         try {
             $this->client->deleteObject($this->bucket, $this->pathPrefixer->prefixPath($path));
-        } catch (Throwable $throwable) {
-            throw UnableToDeleteFile::atLocation($path, '', $throwable);
+        } catch (OssException $ossException) {
+            throw UnableToDeleteFile::atLocation($path, '', $ossException);
         }
     }
 
@@ -227,8 +227,8 @@ class OssAdapter implements FilesystemAdapter
                 $this->pathPrefixer->prefixPath($path),
                 $this->visibilityConverter->visibilityToAcl($visibility)
             );
-        } catch (Throwable $throwable) {
-            throw UnableToSetVisibility::atLocation($path, '', $throwable);
+        } catch (OssException $ossException) {
+            throw UnableToSetVisibility::atLocation($path, '', $ossException);
         }
     }
 
@@ -236,8 +236,8 @@ class OssAdapter implements FilesystemAdapter
     {
         try {
             $result = $this->client->getObjectAcl($this->bucket, $this->pathPrefixer->prefixPath($path));
-        } catch (Throwable $throwable) {
-            throw UnableToRetrieveMetadata::visibility($path, '', $throwable);
+        } catch (OssException $ossException) {
+            throw UnableToRetrieveMetadata::visibility($path, '', $ossException);
         }
 
         $visibility = $this->visibilityConverter->aclToVisibility($result);
@@ -249,7 +249,7 @@ class OssAdapter implements FilesystemAdapter
     {
         try {
             return $this->client->doesObjectExist($this->bucket, $this->pathPrefixer->prefixPath($path));
-        } catch (Throwable $throwable) {
+        } catch (OssException $ossException) {
             return false;
         }
     }
@@ -265,8 +265,8 @@ class OssAdapter implements FilesystemAdapter
             $model = $this->client->listObjects($this->bucket, $options);
 
             return $model->getObjectList() !== [];
-        } catch (Throwable $throwable) {
-            throw UnableToCheckDirectoryExistence::forLocation($path, $throwable);
+        } catch (OssException $ossException) {
+            throw UnableToCheckDirectoryExistence::forLocation($path, $ossException);
         }
     }
 
@@ -311,8 +311,8 @@ class OssAdapter implements FilesystemAdapter
         try {
             /** @var array{key?: string, prefix: ?string, content-length?: string, size?: int, last-modified?: string, content-type?: string} $metadata */
             $metadata = $this->client->getObjectMeta($this->bucket, $this->pathPrefixer->prefixPath($path));
-        } catch (Throwable $throwable) {
-            throw UnableToRetrieveMetadata::create($path, $type, '', $throwable);
+        } catch (OssException $ossException) {
+            throw UnableToRetrieveMetadata::create($path, $type, '', $ossException);
         }
 
         $attributes = $this->mapObjectMetadata($metadata, $path);
@@ -405,8 +405,8 @@ class OssAdapter implements FilesystemAdapter
     {
         try {
             return $this->client->getObject($this->bucket, $this->pathPrefixer->prefixPath($path));
-        } catch (Throwable $throwable) {
-            throw UnableToReadFile::fromLocation($path, '', $throwable);
+        } catch (OssException $ossException) {
+            throw UnableToReadFile::fromLocation($path, '', $ossException);
         }
     }
 
