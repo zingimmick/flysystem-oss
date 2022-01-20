@@ -135,7 +135,7 @@ class OssAdapter extends AbstractAdapter
     {
         try {
             $this->client->deleteObject($this->bucket, $this->applyPathPrefix($path));
-        } catch (OssException $throwable) {
+        } catch (OssException $ossException) {
             return false;
         }
 
@@ -152,7 +152,7 @@ class OssAdapter extends AbstractAdapter
                 $this->applyPathPrefix($newpath),
                 $this->options
             );
-        } catch (OssException $exception) {
+        } catch (OssException $ossException) {
             return false;
         }
 
@@ -173,7 +173,7 @@ class OssAdapter extends AbstractAdapter
                 $this->applyPathPrefix($path),
                 $this->visibilityToAcl($visibility)
             );
-        } catch (OssException $throwable) {
+        } catch (OssException $ossException) {
             return false;
         }
 
@@ -261,7 +261,7 @@ class OssAdapter extends AbstractAdapter
         try {
             /** @var array{key?: string, prefix: ?string, content-length?: string, size?: int, last-modified?: string, content-type?: string} $metadata */
             $metadata = $this->client->getObjectMeta($this->bucket, $this->applyPathPrefix($path));
-        } catch (OssException $throwable) {
+        } catch (OssException $ossException) {
             return false;
         }
 
@@ -303,7 +303,7 @@ class OssAdapter extends AbstractAdapter
     {
         try {
             return $this->client->getObject($this->bucket, $this->applyPathPrefix($path));
-        } catch (OssException $throwable) {
+        } catch (OssException $ossException) {
             return false;
         }
     }
@@ -601,7 +601,7 @@ class OssAdapter extends AbstractAdapter
     {
         try {
             $result = $this->client->getObjectAcl($this->bucket, $this->applyPathPrefix($path));
-        } catch (OssException $throwable) {
+        } catch (OssException $ossException) {
             return false;
         }
 
