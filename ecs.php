@@ -20,6 +20,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         ],
         \PhpCsFixer\Fixer\PhpUnit\PhpUnitMethodCasingFixer::class => [__DIR__ . '/tests/OssAdapterTest.php'],
         \PhpCsFixer\Fixer\PhpUnit\PhpUnitTestAnnotationFixer::class => [__DIR__ . '/tests/OssAdapterTest.php'],
+        \SlevomatCodingStandard\Sniffs\TypeHints\ReturnTypeHintSniff::class,
         // bug
         ReturnAssignmentFixer::class,
     ]);

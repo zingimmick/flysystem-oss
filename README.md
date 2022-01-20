@@ -19,6 +19,7 @@ composer require zing/flysystem-oss
 ## Usage
 
 ```php
+use League\Flysystem\AdapterInterface;
 use League\Flysystem\Filesystem;
 use OSS\OssClient;
 use Zing\Flysystem\Oss\OssAdapter;
@@ -36,10 +37,11 @@ $config['options'] = [
     'endpoint' => $config['endpoint'], 
     'bucket_endpoint' => '',
     'temporary_url' => '',
+    'default_visibility' => AdapterInterface::VISIBILITY_PUBLIC
 ];
 
 $client = new OssClient($config['key'], $config['secret'], $config['endpoint']);
-$adapter = new OssAdapter($client, $config['bucket'], $prefix, null, null, $config['options']);
+$adapter = new OssAdapter($client, $config['bucket'], $prefix, $config['options']);
 $flysystem = new Filesystem($adapter);
 ```
 

@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace Zing\Flysystem\Oss\Tests;
 
+use League\Flysystem\AdapterInterface;
 use League\Flysystem\Config;
-use League\Flysystem\DirectoryAttributes;
-use League\Flysystem\FileAttributes;
-use League\Flysystem\StorageAttributes;
-use League\Flysystem\Visibility;
 use OSS\OssClient;
 use Zing\Flysystem\Oss\OssAdapter;
 
@@ -63,71 +60,86 @@ final class ValidAdapterTest extends TestCase
             $config['key'],
             $config['secret'],
             $config['endpoint']
-        ), $this->getBucket());
-        $this->ossAdapter->write('fixture/read.txt', 'read-test', new Config());
+        ), $this->getBucket(), '', [
+            'default_visibility' => AdapterInterface::VISIBILITY_PUBLIC,
+        ]);
+        $this->ossAdapter->write('fixture/read.txt', 'read-test', new Config(
+            [
+                'visibility' => AdapterInterface::VISIBILITY_PRIVATE,
+            ]
+        ));
     }
 
     protected function tearDown(): void
     {
         parent::tearDown();
 
-        $this->ossAdapter->deleteDirectory('fixture');
+        $this->ossAdapter->deleteDir('fixture');
+    }
+
+    public function testUpdate(): void
+    {
+        $this->ossAdapter->update('fixture/file.txt', 'update', new Config());
+        self::assertSame('update', $this->ossAdapter->read('fixture/file.txt')['contents']);
+    }
+
+    public function testUpdateStream(): void
+    {
+        $this->ossAdapter->write('fixture/file.txt', 'write', new Config());
+        $this->ossAdapter->updateStream('fixture/file.txt', $this->streamFor('update')->detach(), new Config());
+        self::assertSame('update', $this->ossAdapter->read('fixture/file.txt')['contents']);
     }
 
     public function testCopy(): void
     {
         $this->ossAdapter->write('fixture/file.txt', 'write', new Config());
-        $this->ossAdapter->copy('fixture/file.txt', 'fixture/copy.txt', new Config());
-        self::assertSame('write', $this->ossAdapter->read('fixture/copy.txt'));
+        $this->ossAdapter->copy('fixture/file.txt', 'fixture/copy.txt');
+        self::assertSame('write', $this->ossAdapter->read('fixture/copy.txt')['contents']);
     }
 
     public function testCreateDir(): void
     {
-        $this->ossAdapter->createDirectory('fixture/path', new Config());
-        self::assertTrue($this->ossAdapter->directoryExists('fixture/path'));
-        self::assertEquals([], iterator_to_array($this->ossAdapter->listContents('fixture/path', false)));
-        $this->ossAdapter->deleteDirectory('fixture/path');
-        self::assertFalse($this->ossAdapter->directoryExists('fixture/path'));
-    }
-
-    public function testDirectoryExists(): void
-    {
-        $this->assertFalse($this->ossAdapter->directoryExists('fixture/exists-directory'));
-        $this->ossAdapter->createDirectory('fixture/exists-directory', new Config());
-        $this->assertTrue($this->ossAdapter->directoryExists('fixture/exists-directory'));
+        $this->ossAdapter->createDir('fixture/path', new Config());
+        self::assertSame([], $this->ossAdapter->listContents('fixture/path'));
     }
 
     public function testSetVisibility(): void
     {
         $this->ossAdapter->write('fixture/file.txt', 'write', new Config([
-            'visibility' => Visibility::PRIVATE,
+            'visibility' => AdapterInterface::VISIBILITY_PRIVATE,
         ]));
-        self::assertSame(Visibility::PRIVATE, $this->ossAdapter->visibility('fixture/file.txt')['visibility']);
-        $this->ossAdapter->setVisibility('fixture/file.txt', Visibility::PUBLIC);
-        self::assertSame(Visibility::PUBLIC, $this->ossAdapter->visibility('fixture/file.txt')['visibility']);
+        self::assertSame(
+            AdapterInterface::VISIBILITY_PRIVATE,
+            $this->ossAdapter->getVisibility('fixture/file.txt')['visibility']
+        );
+        $this->ossAdapter->setVisibility('fixture/file.txt', AdapterInterface::VISIBILITY_PUBLIC);
+        self::assertSame(
+            AdapterInterface::VISIBILITY_PUBLIC,
+            $this->ossAdapter->getVisibility('fixture/file.txt')['visibility']
+        );
     }
 
     public function testRename(): void
     {
         $this->ossAdapter->write('fixture/from.txt', 'write', new Config());
-        self::assertTrue($this->ossAdapter->fileExists('fixture/from.txt'));
-        self::assertFalse($this->ossAdapter->fileExists('fixture/to.txt'));
-        $this->ossAdapter->move('fixture/from.txt', 'fixture/to.txt', new Config());
-        self::assertFalse($this->ossAdapter->fileExists('fixture/from.txt'));
-        self::assertSame('write', $this->ossAdapter->read('fixture/to.txt'));
+        self::assertTrue($this->ossAdapter->has('fixture/from.txt'));
+        self::assertFalse($this->ossAdapter->has('fixture/to.txt'));
+        $this->ossAdapter->rename('fixture/from.txt', 'fixture/to.txt');
+        self::assertFalse($this->ossAdapter->has('fixture/from.txt'));
+        self::assertSame('write', $this->ossAdapter->read('fixture/to.txt')['contents']);
         $this->ossAdapter->delete('fixture/to.txt');
     }
 
     public function testDeleteDir(): void
     {
-        $this->ossAdapter->deleteDirectory('fixture');
-        self::assertEmpty(iterator_to_array($this->ossAdapter->listContents('fixture', false)));
+        self::assertTrue($this->ossAdapter->deleteDir('fixture'));
+        self::assertEmpty($this->ossAdapter->listContents('fixture'));
     }
 
     public function testWriteStream(): void
     {
-        $this->ossAdapter->writeStream('fixture/file.txt', $this->streamForResource('write'), new Config());
-        self::assertSame('write', $this->ossAdapter->read('fixture/file.txt'));
+        $this->ossAdapter->writeStream('fixture/file.txt', $this->streamFor('write')->detach(), new Config());
+        self::assertSame('write', $this->ossAdapter->read('fixture/file.txt')['contents']);
     }
 
     /**
@@ -135,109 +147,107 @@ final class ValidAdapterTest extends TestCase
      */
     public function provideVisibilities(): \Iterator
     {
-        yield [Visibility::PUBLIC];
-        yield [Visibility::PRIVATE];
+        yield [AdapterInterface::VISIBILITY_PUBLIC];
+        yield [AdapterInterface::VISIBILITY_PRIVATE];
     }
 
     /**
      * @dataProvider provideVisibilities
+     *
+     * @param $visibility
      */
     public function testWriteStreamWithVisibility(string $visibility): void
     {
-        $this->ossAdapter->writeStream('fixture/file.txt', $this->streamForResource('write'), new Config([
+        $this->ossAdapter->writeStream('fixture/file.txt', $this->streamFor('write')->detach(), new Config([
             'visibility' => $visibility,
         ]));
-        self::assertSame($visibility, $this->ossAdapter->visibility('fixture/file.txt')['visibility']);
+        self::assertSame($visibility, $this->ossAdapter->getVisibility('fixture/file.txt')['visibility']);
     }
 
     public function testWriteStreamWithExpires(): void
     {
-        $this->ossAdapter->writeStream('fixture/file.txt', $this->streamForResource('write'), new Config([
+        $this->ossAdapter->writeStream('fixture/file.txt', $this->streamFor('write')->detach(), new Config([
             'Expires' => 20,
         ]));
-        self::assertSame('write', $this->ossAdapter->read('fixture/file.txt'));
+        self::assertSame('write', $this->ossAdapter->read('fixture/file.txt')['contents']);
     }
 
     public function testWriteStreamWithMimetype(): void
     {
-        $this->ossAdapter->writeStream('fixture/file.txt', $this->streamForResource('write'), new Config([
+        $this->ossAdapter->writeStream('fixture/file.txt', $this->streamFor('write')->detach(), new Config([
             OssClient::OSS_CONTENT_TYPE => 'image/png',
         ]));
-        self::assertSame('image/png', $this->ossAdapter->mimeType('fixture/file.txt')['mime_type']);
+        self::assertSame('image/png', $this->ossAdapter->getMimetype('fixture/file.txt')['mimetype']);
     }
 
     public function testDelete(): void
     {
-        $this->ossAdapter->writeStream('fixture/file.txt', $this->streamForResource('test'), new Config());
-        self::assertTrue($this->ossAdapter->fileExists('fixture/file.txt'));
+        $this->ossAdapter->writeStream('fixture/file.txt', $this->streamFor('test')->detach(), new Config());
+        self::assertTrue($this->ossAdapter->has('fixture/file.txt'));
         $this->ossAdapter->delete('fixture/file.txt');
-        self::assertFalse($this->ossAdapter->fileExists('fixture/file.txt'));
+        self::assertFalse($this->ossAdapter->has('fixture/file.txt'));
     }
 
     public function testWrite(): void
     {
         $this->ossAdapter->write('fixture/file.txt', 'write', new Config());
-        self::assertSame('write', $this->ossAdapter->read('fixture/file.txt'));
+        self::assertSame('write', $this->ossAdapter->read('fixture/file.txt')['contents']);
     }
 
     public function testRead(): void
     {
-        self::assertSame('read-test', $this->ossAdapter->read('fixture/read.txt'));
+        self::assertSame('read-test', $this->ossAdapter->read('fixture/read.txt')['contents']);
     }
 
     public function testReadStream(): void
     {
-        self::assertSame('read-test', stream_get_contents($this->ossAdapter->readStream('fixture/read.txt')));
+        self::assertSame('read-test', stream_get_contents($this->ossAdapter->readStream('fixture/read.txt')['stream']));
     }
 
     public function testGetVisibility(): void
     {
-        self::assertSame(Visibility::PUBLIC, $this->ossAdapter->visibility('fixture/read.txt')->visibility());
+        self::assertSame(
+            AdapterInterface::VISIBILITY_PRIVATE,
+            $this->ossAdapter->getVisibility('fixture/read.txt')['visibility']
+        );
+    }
+
+    public function testGetMetadata(): void
+    {
+        self::assertIsArray($this->ossAdapter->getMetadata('fixture/read.txt'));
     }
 
     public function testListContents(): void
     {
-        self::assertNotEmpty(iterator_to_array($this->ossAdapter->listContents('fixture', false)));
-        self::assertEmpty(iterator_to_array($this->ossAdapter->listContents('path1', false)));
-        $this->ossAdapter->createDirectory('fixture/path/dir', new Config());
-        $this->ossAdapter->write('fixture/path/dir/file.txt', 'test', new Config());
-        /** @var \League\Flysystem\StorageAttributes[] $contents */
-        $contents = iterator_to_array($this->ossAdapter->listContents('fixture/path', true));
-        self::assertContainsOnlyInstancesOf(StorageAttributes::class, $contents);
-        self::assertCount(2, $contents);
-        /** @var \League\Flysystem\FileAttributes $file */
-        /** @var \League\Flysystem\DirectoryAttributes $directory */
-        [$file,$directory] = $contents[0]->isFile() ? [$contents[0], $contents[1]] : [$contents[1], $contents[0]];
-        self::assertInstanceOf(FileAttributes::class, $file);
-        self::assertSame('fixture/path/dir/file.txt', $file->path());
-        self::assertSame(4, $file->fileSize());
-
-        self::assertNull($file->mimeType());
-        self::assertNotNull($file->lastModified());
-        self::assertNull($file->visibility());
-        self::assertIsArray($file->extraMetadata());
-        self::assertInstanceOf(DirectoryAttributes::class, $directory);
-        self::assertSame('fixture/path/dir', $directory->path());
+        self::assertNotEmpty($this->ossAdapter->listContents('fixture'));
+        self::assertEmpty($this->ossAdapter->listContents('path1'));
+        $this->ossAdapter->write('fixture/path/file.txt', 'test', new Config());
+        $this->ossAdapter->listContents('a', true);
     }
 
     public function testGetSize(): void
     {
-        self::assertSame(9, $this->ossAdapter->fileSize('fixture/read.txt')->fileSize());
+        self::assertSame(9, $this->ossAdapter->getSize('fixture/read.txt')['size']);
     }
 
     public function testGetTimestamp(): void
     {
-        self::assertGreaterThan(time() - 10, $this->ossAdapter->lastModified('fixture/read.txt')->lastModified());
+        self::assertGreaterThan(time() - 10, $this->ossAdapter->getTimestamp('fixture/read.txt')['timestamp']);
     }
 
     public function testGetMimetype(): void
     {
-        self::assertSame('text/plain', $this->ossAdapter->mimeType('fixture/read.txt')->mimeType());
+        self::assertSame('text/plain', $this->ossAdapter->getMimetype('fixture/read.txt')['mimetype']);
     }
 
     public function testHas(): void
     {
-        self::assertTrue($this->ossAdapter->fileExists('fixture/read.txt'));
+        self::assertTrue($this->ossAdapter->has('fixture/read.txt'));
+    }
+
+    public function testSignUrl(): void
+    {
+        self::assertSame('read-test', file_get_contents($this->ossAdapter->signUrl('fixture/read.txt', 10, [])));
     }
 
     public function testGetTemporaryUrl(): void
@@ -250,30 +260,15 @@ final class ValidAdapterTest extends TestCase
 
     public function testImage(): void
     {
-        $contents = file_get_contents('https://via.placeholder.com/640x480.png');
-        if ($contents === false) {
-            self::markTestSkipped('Require image contents');
-        }
-
-        $this->ossAdapter->write('fixture/image.png', $contents, new Config());
-        /** @var array{int, int} $info */
-        $info = getimagesize($this->ossAdapter->getTemporaryUrl('fixture/image.png', 10, [
+        $this->ossAdapter->write(
+            'fixture/image.png',
+            file_get_contents('https://via.placeholder.com/640x480.png'),
+            new Config()
+        );
+        $info = getimagesize($this->ossAdapter->signUrl('fixture/image.png', 10, [
             'x-oss-process' => 'image/crop,w_200,h_100',
         ]));
-
         self::assertSame(200, $info[0]);
         self::assertSame(100, $info[1]);
-    }
-
-    /**
-     * @dataProvider provideVisibilities
-     */
-    public function testCopyWithVisibility(string $visibility): void
-    {
-        $this->ossAdapter->write('fixture/private.txt', 'private', new Config([
-            Config::OPTION_VISIBILITY => $visibility,
-        ]));
-        $this->ossAdapter->copy('fixture/private.txt', 'fixture/copied-private.txt', new Config());
-        self::assertSame($visibility, $this->ossAdapter->visibility('fixture/copied-private.txt')->visibility());
     }
 }

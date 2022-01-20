@@ -11,28 +11,14 @@ use function GuzzleHttp\Psr7\stream_for;
 abstract class TestCase extends BaseTestCase
 {
     /**
-     * @param array{size?: int, metadata?: array<string, mixed>} $options
+     * @return \Psr\Http\Message\StreamInterface
      */
-    protected function streamFor(string $content = '', array $options = []): \Psr\Http\Message\StreamInterface
+    protected function streamFor(string $resource = '', array $options = [])
     {
         if (function_exists('\GuzzleHttp\Psr7\stream_for')) {
-            return stream_for($content, $options);
+            return stream_for($resource, $options);
         }
 
-        return Utils::streamFor($content, $options);
-    }
-
-    /**
-     * @param array{size?: int, metadata?: array<string, mixed>} $options
-     *
-     * @return resource
-     */
-    protected function streamForResource(string $content = '', array $options = [])
-    {
-        /** @var resource $resource */
-        $resource = $this->streamFor($content, $options)
-            ->detach();
-
-        return $resource;
+        return Utils::streamFor($resource, $options);
     }
 }
