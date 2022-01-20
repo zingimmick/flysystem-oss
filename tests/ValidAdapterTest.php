@@ -264,4 +264,16 @@ final class ValidAdapterTest extends TestCase
         self::assertSame(200, $info[0]);
         self::assertSame(100, $info[1]);
     }
+
+    /**
+     * @dataProvider provideVisibilities
+     */
+    public function testCopyWithVisibility(string $visibility): void
+    {
+        $this->ossAdapter->write('fixture/private.txt', 'private', new Config([
+            Config::OPTION_VISIBILITY => $visibility,
+        ]));
+        $this->ossAdapter->copy('fixture/private.txt', 'fixture/copied-private.txt', new Config());
+        self::assertSame($visibility, $this->ossAdapter->visibility('fixture/copied-private.txt')->visibility());
+    }
 }

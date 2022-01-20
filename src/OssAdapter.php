@@ -176,18 +176,6 @@ class OssAdapter implements FilesystemAdapter
     public function copy(string $source, string $destination, Config $config): void
     {
         try {
-            /** @var string $visibility */
-            $visibility = $this->visibility($source)
-                ->visibility();
-        } catch (Throwable $exception) {
-            throw UnableToCopyFile::fromLocationTo($source, $destination, $exception);
-        }
-
-        $config = $config->withDefaults([
-            Config::OPTION_VISIBILITY => $visibility,
-        ]);
-
-        try {
             $this->client->copyObject(
                 $this->bucket,
                 $this->pathPrefixer->prefixPath($source),
