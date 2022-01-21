@@ -15,6 +15,7 @@ use League\Flysystem\FilesystemOperationFailed;
 use League\Flysystem\PathPrefixer;
 use League\Flysystem\StorageAttributes;
 use League\Flysystem\UnableToCheckDirectoryExistence;
+use League\Flysystem\UnableToCheckFileExistence;
 use League\Flysystem\UnableToCopyFile;
 use League\Flysystem\UnableToCreateDirectory;
 use League\Flysystem\UnableToDeleteFile;
@@ -250,7 +251,7 @@ class OssAdapter implements FilesystemAdapter
         try {
             return $this->client->doesObjectExist($this->bucket, $this->pathPrefixer->prefixPath($path));
         } catch (OssException $ossException) {
-            return false;
+            throw UnableToCheckFileExistence::forLocation($path, $ossException);
         }
     }
 

@@ -8,6 +8,7 @@ use League\Flysystem\Config;
 use League\Flysystem\DirectoryAttributes;
 use League\Flysystem\FileAttributes;
 use League\Flysystem\StorageAttributes;
+use League\Flysystem\UnableToCheckFileExistence;
 use League\Flysystem\UnableToCopyFile;
 use League\Flysystem\UnableToRetrieveMetadata;
 use League\Flysystem\Visibility;
@@ -189,7 +190,8 @@ final class MockAdapterTest extends TestCase
         $this->legacyMock->shouldReceive('doesObjectExist')
             ->once()
             ->withArgs(['test', 'to.txt'])->andThrow(new \OSS\Core\OssException('mock test'));
-        self::assertFalse($this->ossAdapter->fileExists('to.txt'));
+        $this->expectException(UnableToCheckFileExistence::class);
+        $this->ossAdapter->fileExists('to.txt');
         $this->legacyMock->shouldReceive('copyObject')
             ->withArgs(['test', 'from.txt', 'test', 'to.txt', []])->andReturn(null);
         $this->legacyMock->shouldReceive('deleteObject')
@@ -328,7 +330,8 @@ final class MockAdapterTest extends TestCase
         $this->ossAdapter->delete('file.txt');
         $this->legacyMock->shouldReceive('doesObjectExist')
             ->withArgs(['test', 'file.txt'])->andThrow(new \OSS\Core\OssException('mock test'));
-        self::assertFalse($this->ossAdapter->fileExists('file.txt'));
+        $this->expectException(UnableToCheckFileExistence::class);
+        $this->ossAdapter->fileExists('file.txt');
     }
 
     public function testWrite(): void

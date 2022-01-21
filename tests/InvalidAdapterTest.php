@@ -6,6 +6,7 @@ namespace Zing\Flysystem\Oss\Tests;
 
 use League\Flysystem\Config;
 use League\Flysystem\UnableToCheckDirectoryExistence;
+use League\Flysystem\UnableToCheckFileExistence;
 use League\Flysystem\UnableToCopyFile;
 use League\Flysystem\UnableToCreateDirectory;
 use League\Flysystem\UnableToDeleteFile;
@@ -151,7 +152,8 @@ final class InvalidAdapterTest extends TestCase
 
     public function testHas(): void
     {
-        self::assertFalse($this->ossAdapter->fileExists('file.txt'));
+        $this->expectException(UnableToCheckFileExistence::class);
+        $this->ossAdapter->fileExists('file.txt');
     }
 
     public function testBucket(): void
