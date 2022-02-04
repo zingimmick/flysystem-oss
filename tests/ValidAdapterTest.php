@@ -201,6 +201,7 @@ final class ValidAdapterTest extends TestCase
         self::assertEmpty(iterator_to_array($this->ossAdapter->listContents('path1', false)));
         $this->ossAdapter->createDirectory('fixture/path/dir', new Config());
         $this->ossAdapter->write('fixture/path/dir/file.txt', 'test', new Config());
+
         /** @var \League\Flysystem\StorageAttributes[] $contents */
         $contents = iterator_to_array($this->ossAdapter->listContents('fixture/path', true));
         self::assertContainsOnlyInstancesOf(StorageAttributes::class, $contents);
@@ -256,6 +257,7 @@ final class ValidAdapterTest extends TestCase
         }
 
         $this->ossAdapter->write('fixture/image.png', $contents, new Config());
+
         /** @var array{int, int} $info */
         $info = getimagesize($this->ossAdapter->getTemporaryUrl('fixture/image.png', 10, [
             'x-oss-process' => 'image/crop,w_200,h_100',

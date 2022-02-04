@@ -58,6 +58,7 @@ final class OssAdapterTest extends FilesystemAdapterTestCase
 
         $adapter = $this->adapter();
         $adapter->deleteDirectory('/');
+
         /** @var \League\Flysystem\StorageAttributes[] $listing */
         $listing = $adapter->listContents('', false);
 
