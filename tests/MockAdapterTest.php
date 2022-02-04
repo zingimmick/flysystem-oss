@@ -475,6 +475,7 @@ final class MockAdapterTest extends TestCase
         $contents = iterator_to_array($this->ossAdapter->listContents('a', true));
         self::assertContainsOnlyInstancesOf(StorageAttributes::class, $contents);
         self::assertCount(2, $contents);
+
         /** @var \League\Flysystem\FileAttributes $file */
         $file = $contents[0];
         self::assertInstanceOf(FileAttributes::class, $file);
@@ -488,6 +489,7 @@ final class MockAdapterTest extends TestCase
             'x-oss-storage-class' => 'STANDARD_IA',
             'etag' => 'd41d8cd98f00b204e9800998ecf8427e',
         ], $file->extraMetadata());
+
         /** @var \League\Flysystem\DirectoryAttributes $directory */
         $directory = $contents[1];
         self::assertInstanceOf(DirectoryAttributes::class, $directory);
