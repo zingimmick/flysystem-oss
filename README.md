@@ -1,4 +1,5 @@
 # Flysystem OSS
+
 <p align="center">
 <a href="https://github.com/zingimmick/flysystem-oss/actions"><img src="https://github.com/zingimmick/flysystem-oss/workflows/tests/badge.svg" alt="Build Status"></a>
 <a href="https://codecov.io/gh/zingimmick/flysystem-oss"><img src="https://codecov.io/gh/zingimmick/flysystem-oss/branch/master/graph/badge.svg" alt="Code Coverage" /></a>
@@ -8,7 +9,16 @@
 <a href="https://packagist.org/packages/zing/flysystem-oss"><img src="https://poser.pugx.org/zing/flysystem-oss/license" alt="License"></a>
 </p>
 
-> **Requires [PHP 7.2.0+](https://php.net/releases/)**
+> **Requires**
+> - **[PHP 7.2.0+](https://php.net/releases/)**
+> - **[league/flysystem 2.0+](https://github.com/thephpleague/flysystem/releases)**
+
+## Version Information
+
+| Version | league/flysystem | PHP Version | Status                  |
+|:--------|:-----------------|:------------|:------------------------|
+| 2.x     | 2.x - 3.x        | >= 7.2      | Active support :rocket: |
+| 1.x     | 1.x              | >= 7.2      | Active support          |
 
 Require Flysystem OSS using [Composer](https://getcomposer.org):
 
@@ -43,11 +53,13 @@ $adapter = new OssAdapter($client, $config['bucket'], $prefix, null, null, $conf
 $flysystem = new Filesystem($adapter);
 ```
 
+## Integration
+
+- Laravel: [zing/laravel-flysystem-oss](https://github.com/zingimmick/laravel-flysystem-oss)
+
 ## Reference
 
 [league/flysystem-aws-s3-v3](https://github.com/thephpleague/flysystem-aws-s3-v3)
-
-[zing/flysystem-obs](https://github.com/zingimmick/flysystem-obs)
 
 ## License
 
