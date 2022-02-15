@@ -210,10 +210,12 @@ class OssAdapter implements FilesystemAdapter
 
     public function createDirectory(string $path, Config $config): void
     {
+        $defaultVisibility = $config->get('directory_visibility', $this->visibilityConverter->defaultForDirectories());
+        $config = $config->withDefaults([
+            'visibility' => $defaultVisibility,
+        ]);
+
         try {
-            $config = $config->withDefaults([
-                'visibility' => $this->visibilityConverter->defaultForDirectories(),
-            ]);
             $this->write(trim($path, '/') . '/', '', $config);
         } catch (FilesystemOperationFailed $filesystemOperationFailed) {
             throw UnableToCreateDirectory::dueToFailure($path, $filesystemOperationFailed);
