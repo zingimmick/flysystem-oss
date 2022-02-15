@@ -13,7 +13,7 @@
 Require Flysystem OSS using [Composer](https://getcomposer.org):
 
 ```bash
-composer require zing/flysystem-oss
+composer require zing/flysystem-oss:^1.0
 ```
 
 ## Usage
