@@ -15,7 +15,7 @@ abstract class TestCase extends BaseTestCase
      */
     protected function streamFor(string $resource = '', array $options = [])
     {
-        if (function_exists('\GuzzleHttp\Psr7\stream_for')) {
+        if (\function_exists('\GuzzleHttp\Psr7\stream_for')) {
             return stream_for($resource, $options);
         }
 
