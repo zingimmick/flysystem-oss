@@ -11,14 +11,14 @@
 
 > **Requires**
 > - **[PHP 7.2.0+](https://php.net/releases/)**
-> - **[league/flysystem 2.0+](https://github.com/thephpleague/flysystem/releases)**
+> - **[Flysystem 2.0+](https://github.com/thephpleague/flysystem/releases)**
 
 ## Version Information
 
-| Version | league/flysystem | PHP Version | Status                  |
-|:--------|:-----------------|:------------|:------------------------|
-| 2.x     | 2.x - 3.x        | >= 7.2      | Active support :rocket: |
-| 1.x     | 1.x              | >= 7.2      | Active support          |
+| Version | Flysystem | PHP Version | Status                  |
+|:--------|:----------|:------------|:------------------------|
+| 2.x     | 2.x - 3.x | >= 7.2      | Active support :rocket: |
+| 1.x     | 1.x       | >= 7.2      | Active support          |
 
 Require Flysystem OSS using [Composer](https://getcomposer.org):
 
