@@ -104,7 +104,7 @@ class OssAdapter extends AbstractAdapter
             }
         }
 
-        $shouldDetermineMimetype = $contents !== '' && ! array_key_exists(OssClient::OSS_CONTENT_TYPE, $options);
+        $shouldDetermineMimetype = $contents !== '' && ! \array_key_exists(OssClient::OSS_CONTENT_TYPE, $options);
 
         if ($shouldDetermineMimetype) {
             $mimeType = Util::guessMimeType($path, $contents);
