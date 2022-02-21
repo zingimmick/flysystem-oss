@@ -148,7 +148,7 @@ class OssAdapter implements FilesystemAdapter
             }
         }
 
-        $shouldDetermineMimetype = $contents !== '' && ! array_key_exists(OssClient::OSS_CONTENT_TYPE, $options);
+        $shouldDetermineMimetype = $contents !== '' && ! \array_key_exists(OssClient::OSS_CONTENT_TYPE, $options);
 
         if ($shouldDetermineMimetype) {
             $mimeType = $this->mimeTypeDetector->detectMimeType($path, $contents);

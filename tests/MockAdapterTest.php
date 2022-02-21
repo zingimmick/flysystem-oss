@@ -59,8 +59,8 @@ final class MockAdapterTest extends TestCase
                 ];
         }
 
-        $arg = ['test', $path, is_resource($body) ? stream_get_contents($body) : $body, $options];
-        if (is_resource($body)) {
+        $arg = ['test', $path, \is_resource($body) ? stream_get_contents($body) : $body, $options];
+        if (\is_resource($body)) {
             rewind($body);
         }
 
@@ -159,7 +159,7 @@ final class MockAdapterTest extends TestCase
             ->withArgs(['test', 'path/']);
         $this->ossAdapter->createDirectory('path', new Config());
         self::assertTrue($this->ossAdapter->directoryExists('path'));
-        self::assertEquals([], iterator_to_array($this->ossAdapter->listContents('path', false)));
+        self::assertSame([], iterator_to_array($this->ossAdapter->listContents('path', false)));
         $this->ossAdapter->deleteDirectory('path');
         self::assertFalse($this->ossAdapter->directoryExists('path'));
     }
@@ -580,8 +580,8 @@ final class MockAdapterTest extends TestCase
                     ],
                 ],
             ])->andReturn(null);
-        $this->assertFalse($this->ossAdapter->directoryExists('fixture/exists-directory'));
+        self::assertFalse($this->ossAdapter->directoryExists('fixture/exists-directory'));
         $this->ossAdapter->createDirectory('fixture/exists-directory', new Config());
-        $this->assertTrue($this->ossAdapter->directoryExists('fixture/exists-directory'));
+        self::assertTrue($this->ossAdapter->directoryExists('fixture/exists-directory'));
     }
 }
