@@ -1,7 +1,7 @@
 {
     "name": "zing/flysystem-oss",
-    "description": "Flysystem adapter for the OSS SDK",
-    "keywords": ["flysystem", "oss"],
+    "description": "OSS filesystem adapter for Flysystem.",
+    "keywords": ["oss", "flysystem", "filesystem", "storage", "file", "files"],
     "license": "MIT",
     "authors": [
         {
