@@ -124,7 +124,7 @@ final class MockAdapterTest extends TestCase
             ->withArgs([
                 'test', [
                     'delimiter' => '/',
-                    'prefix' => 'path/',
+                    'prefix' => 'path/','max-keys' => 1
                 ],
             ])->andReturn(new ObjectListInfo('test', 'path/', '', '', '1000', '/', null, [
                 new ObjectInfo('path/', '', '', '', '', ''),
@@ -562,7 +562,7 @@ final class MockAdapterTest extends TestCase
             ->withArgs([
                 'test', [
                     'prefix' => 'fixture/exists-directory/',
-                    'delimiter' => '/',
+                    'delimiter' => '/', 'max-keys' => 1
                 ],
             ])->andReturn(
                 new ObjectListInfo('test', 'fixture/exists-directory/', '', '', '1000', '/', null, [], []),

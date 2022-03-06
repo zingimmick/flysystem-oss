@@ -264,6 +264,7 @@ class OssAdapter implements FilesystemAdapter
             $options = [
                 'prefix' => $prefix,
                 'delimiter' => '/',
+                'max-keys' => 1,
             ];
             $model = $this->client->listObjects($this->bucket, $options);
 
