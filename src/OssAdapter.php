@@ -490,7 +490,7 @@ class OssAdapter extends AbstractAdapter
             return false;
         }
 
-        $uri = new Uri($this->signUrl($path, $expiration, $options, $method));
+        $uri = new Uri($signedUrl);
 
         if (isset($this->options['temporary_url'])) {
             $uri = $this->replaceBaseUrl($uri, $this->options['temporary_url']);
@@ -550,7 +550,7 @@ class OssAdapter extends AbstractAdapter
 
     public function createDir($dirname, Config $config): bool
     {
-        return $this->upload($dirname . '/', '', $config);
+        return $this->upload(rtrim($dirname, '/') . '/', '', $config);
     }
 
     public function has($path): bool
