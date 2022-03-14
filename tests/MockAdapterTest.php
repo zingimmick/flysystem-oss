@@ -288,7 +288,9 @@ final class MockAdapterTest extends TestCase
                 'file.txt',
                 stream_get_contents($contents), [
                     'Content-Type' => 'text/plain',
-                    'Expires' => 20,
+                    OssClient::OSS_HEADERS => [
+                        'Expires' => 20,
+                    ],
                 ],
             ])->andReturn(null);
         rewind($contents);
@@ -306,6 +308,9 @@ final class MockAdapterTest extends TestCase
             ->withArgs([
                 'test',
                 'file.txt', stream_get_contents($contents), [
+                    OssClient::OSS_HEADERS => [
+                        OssClient::OSS_CONTENT_TYPE => 'image/png',
+                    ],
                     OssClient::OSS_CONTENT_TYPE => 'image/png',
                 ],
             ])->andReturn(null);
