@@ -287,10 +287,8 @@ final class MockAdapterTest extends TestCase
             ->withArgs(['test', 'path'])->andThrow(new \OSS\Core\OssException(''));
         $this->client->shouldReceive('doesObjectExist')
             ->withArgs(['test', 'path/'])->andThrow(new \OSS\Core\OssException(''));
-        $this->client->shouldReceive('deleteObject')
-            ->withArgs(['test', 'path/'])->andReturn(null);
-        $this->client->shouldReceive('deleteObject')
-            ->withArgs(['test', 'path/file.txt'])->andReturn(null);
+        $this->client->shouldReceive('deleteObjects')
+            ->withArgs(['test', ['path/', 'path/file.txt']])->andReturn(null);
         $this->client->shouldReceive('doesObjectExist')
             ->once()
             ->withArgs(['test', 'path/file.txt'])->andReturn(false);

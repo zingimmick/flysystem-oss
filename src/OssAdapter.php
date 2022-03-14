@@ -234,10 +234,15 @@ class OssAdapter extends AbstractAdapter
      */
     public function listContents($directory = '', $recursive = false): array
     {
-        $directory = substr($directory, -1) === '/' ? $directory : $directory . '/';
+        $directory = rtrim($directory, '/');
         $result = $this->listDirObjects($directory, $recursive);
         $list = [];
         foreach ($result['objects'] as $files) {
+            $path = $this->removePathPrefix(rtrim($files['key'], '/'));
+            if ($path === $directory) {
+                continue;
+            }
+
             $list[] = $this->mapObjectMetadata($files);
         }
 
@@ -355,10 +360,6 @@ class OssAdapter extends AbstractAdapter
         $result['objects'] = [];
         if (! empty($objects)) {
             foreach ($objects as $object) {
-                if ($object->getKey() === $dirname) {
-                    continue;
-                }
-
                 $result['objects'][] = [
                     'prefix' => $dirname,
                     'key' => $object->getKey(),
@@ -532,12 +533,11 @@ class OssAdapter extends AbstractAdapter
 
     public function deleteDir($dirname): bool
     {
-        $files = $this->listContents($dirname, true);
-        foreach ($files as $file) {
-            $this->delete($file['type'] === 'file' ? $file['path'] : $file['path'] . '/');
+        $result = $this->listDirObjects($dirname, true);
+        $keys = array_column($result['objects'], 'key');
+        if ($keys !== []) {
+            $this->client->deleteObjects($this->bucket, $keys);
         }
-
-        $this->delete($dirname . '/');
 
         return ! $this->has($dirname);
     }
