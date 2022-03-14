@@ -238,7 +238,7 @@ class OssAdapter extends AbstractAdapter
         $result = $this->listDirObjects($directory, $recursive);
         $list = [];
         foreach ($result['objects'] as $files) {
-            $path = $this->removePathPrefix(rtrim($files['key'], '/'));
+            $path = $this->removePathPrefix(rtrim((string) ($files['key'] ?? $files['prefix']), '/'));
             if ($path === $directory) {
                 continue;
             }
@@ -535,11 +535,17 @@ class OssAdapter extends AbstractAdapter
     {
         $result = $this->listDirObjects($dirname, true);
         $keys = array_column($result['objects'], 'key');
-        if ($keys !== []) {
-            $this->client->deleteObjects($this->bucket, $keys);
+        if ($keys === []) {
+            return true;
         }
 
-        return ! $this->has($dirname);
+        try {
+            $this->client->deleteObjects($this->bucket, $keys);
+        } catch (OssException $ossException) {
+            return false;
+        }
+
+        return true;
     }
 
     public function createDir($dirname, Config $config): bool
