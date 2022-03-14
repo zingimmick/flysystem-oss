@@ -242,6 +242,7 @@ class OssAdapter extends AbstractAdapter
             if ($path === $directory) {
                 continue;
             }
+
             $list[] = $this->mapObjectMetadata($files);
         }
 
@@ -534,8 +535,7 @@ class OssAdapter extends AbstractAdapter
     {
         $result = $this->listDirObjects($dirname, true);
         $keys = array_column($result['objects'], 'key');
-        if (count($keys)!==0)
-        {
+        if ($keys !== []) {
             $this->client->deleteObjects($this->bucket, $keys);
         }
 

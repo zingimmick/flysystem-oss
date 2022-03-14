@@ -102,11 +102,11 @@ final class ValidAdapterTest extends TestCase
         $this->ossAdapter->createDir('fixture/path', new Config());
         self::assertSame([], $this->ossAdapter->listContents('fixture/path'));
         self::assertSame([], $this->ossAdapter->listContents('fixture/path/'));
-        $this->ossAdapter->write('fixture/path1/file.txt','test',new Config());
-        $contents=$this->ossAdapter->listContents('fixture/path1');
-        self::assertCount(1,$contents);
-        $file=$contents[0];
-        self::assertSame('fixture/path1/file.txt',$file['path']);
+        $this->ossAdapter->write('fixture/path1/file.txt', 'test', new Config());
+        $contents = $this->ossAdapter->listContents('fixture/path1');
+        self::assertCount(1, $contents);
+        $file = $contents[0];
+        self::assertSame('fixture/path1/file.txt', $file['path']);
     }
 
     public function testSetVisibility(): void
