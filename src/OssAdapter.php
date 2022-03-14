@@ -30,7 +30,38 @@ class OssAdapter extends AbstractAdapter
     /**
      * @var string[]
      */
-    private const AVAILABLE_OPTIONS = [OssClient::OSS_EXPIRES, OssClient::OSS_CONTENT_TYPE];
+    private const AVAILABLE_OPTIONS = [
+        OssClient::OSS_REQUEST_PAYER,
+        OssClient::OSS_OBJECT_ACL,
+        OssClient::OSS_EXPIRES,
+        OssClient::OSS_CACHE_CONTROL,
+        OssClient::OSS_CONTENT_DISPOSTION,
+        OssClient::OSS_TRAFFIC_LIMIT,
+        OssClient::OSS_CONTENT_TYPE,
+        OssClient::OSS_CONTENT_MD5,
+        OssClient::OSS_CONTENT_LENGTH,
+        'x-oss-storage-class',
+        'x-oss-tagging',
+        'Content-Encoding',
+        'Content-Language',
+        'x-oss-server-side-encryption',
+        'x-oss-meta-self-define-title',
+        'x-oss-forbid-overwrite',
+        'x-oss-server-side-data-encryption',
+        'x-oss-server-side-encryption-key-id',
+    ];
+
+    /**
+     * @var string[]
+     */
+    private const MUP_AVAILABLE_OPTIONS = [
+        OssClient::OSS_CALLBACK,
+        OssClient::OSS_CALLBACK_VAR,
+        OssClient::OSS_CONTENT_TYPE,
+        OssClient::OSS_LENGTH,
+        OssClient::OSS_CHECK_MD5,
+        OssClient::OSS_HEADERS,
+    ];
 
     /**
      * @var string
@@ -403,8 +434,20 @@ class OssAdapter extends AbstractAdapter
     protected function createOptionsFromConfig(Config $config): array
     {
         $options = $this->options;
+        $mimeType = $config->get('mimetype');
+        if ($mimeType) {
+            $options[OssClient::OSS_CONTENT_TYPE] = $mimeType;
+        }
 
         foreach (self::AVAILABLE_OPTIONS as $option) {
+            $value = $config->get($option, '__NOT_SET__');
+
+            if ($value !== '__NOT_SET__') {
+                $options[OssClient::OSS_HEADERS][$option] = $value;
+            }
+        }
+
+        foreach (self::MUP_AVAILABLE_OPTIONS as $option) {
             $value = $config->get($option, '__NOT_SET__');
 
             if ($value !== '__NOT_SET__') {

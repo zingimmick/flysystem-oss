@@ -345,7 +345,9 @@ final class MockAdapterTest extends TestCase
             ->withArgs([
                 'test', 'file.txt', 'write', [
                     'endpoint' => 'oss-cn-shanghai.aliyuncs.com',
-                    'Expires' => 20,
+                    'headers' => [
+                        'Expires' => 20,
+                    ],
                     'Content-Type' => 'text/plain',
                 ],
             ])->andReturn(null);
@@ -362,7 +364,7 @@ final class MockAdapterTest extends TestCase
             ->withArgs([
                 'test', 'file.txt', 'write', [
                     'endpoint' => 'oss-cn-shanghai.aliyuncs.com',
-                    'Content-Type' => 'text/plain',
+                    'Content-Type' => 'image/png',
                 ],
             ])->andReturn(null);
         $this->ossAdapter->writeStream('file.txt', $this->streamFor('write')->detach(), new Config([
