@@ -18,6 +18,7 @@ use League\Flysystem\UnableToCheckDirectoryExistence;
 use League\Flysystem\UnableToCheckFileExistence;
 use League\Flysystem\UnableToCopyFile;
 use League\Flysystem\UnableToCreateDirectory;
+use League\Flysystem\UnableToDeleteDirectory;
 use League\Flysystem\UnableToDeleteFile;
 use League\Flysystem\UnableToMoveFile;
 use League\Flysystem\UnableToReadFile;
@@ -202,13 +203,14 @@ class OssAdapter implements FilesystemAdapter
     {
         $result = $this->listDirObjects($path, true);
         $keys = array_column($result['objects'], 'key');
-        if ($keys !== []) {
-            try
-            {
-                $this->client->deleteObjects($this->bucket, $keys);
-            }catch (OssException $ossException){
-                throw UnableToCreateDirectory::dueToFailure($path, $ossException);
-            }
+        if ($keys === []) {
+            return;
+        }
+
+        try {
+            $this->client->deleteObjects($this->bucket, $keys);
+        } catch (OssException $ossException) {
+            throw UnableToDeleteDirectory::atLocation($path, '', $ossException);
         }
     }
 
@@ -303,7 +305,7 @@ class OssAdapter implements FilesystemAdapter
         $result = $this->listDirObjects($directory, $deep);
 
         foreach ($result['objects'] as $files) {
-            $path = $this->pathPrefixer->stripDirectoryPrefix(rtrim($files['key']));
+            $path = $this->pathPrefixer->stripDirectoryPrefix((string) ($files['key'] ?? $files['prefix']));
             if ($path === $directory) {
                 continue;
             }

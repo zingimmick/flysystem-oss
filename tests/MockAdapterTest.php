@@ -10,6 +10,7 @@ use League\Flysystem\FileAttributes;
 use League\Flysystem\StorageAttributes;
 use League\Flysystem\UnableToCheckFileExistence;
 use League\Flysystem\UnableToCopyFile;
+use League\Flysystem\UnableToDeleteDirectory;
 use League\Flysystem\UnableToRetrieveMetadata;
 use League\Flysystem\Visibility;
 use Mockery;
@@ -219,13 +220,20 @@ final class MockAdapterTest extends TestCase
                     'marker' => '',
                     'delimiter' => '',
                 ],
-            ])->andReturn(new ObjectListInfo('test', '', '', '', '', '', null, [], []));
-        $this->mockGetMetadata('path/');
-        $this->mockGetMetadata('path/file.txt');
-        $this->legacyMock->shouldReceive('getObjectMeta')
-            ->withArgs(['test', 'path'])->andThrow(new \OSS\Core\OssException('mock test'));
+            ])->andReturn(new ObjectListInfo('test', '', '', '', '', '', null, [
+                new ObjectInfo('path/', '', '', '', '', ''),
+                new ObjectInfo('path/file.txt', '', '', '', '', ''),
+            ], []));
         $this->legacyMock->shouldReceive('deleteObjects')
-            ->withArgs(['test',[ 'path/','path/file.txt']])->andReturn(null);
+            ->once()
+            ->withArgs(['test', ['path/', 'path/file.txt']])
+            ->andReturn(null);
+        $this->legacyMock->shouldReceive('deleteObjects')
+            ->once()
+            ->withArgs(['test', ['path/', 'path/file.txt']])
+            ->andThrow(new \OSS\Core\OssException('mock test'));
+        $this->ossAdapter->deleteDirectory('path');
+        $this->expectException(UnableToDeleteDirectory::class);
         $this->ossAdapter->deleteDirectory('path');
         self::assertTrue(true);
     }

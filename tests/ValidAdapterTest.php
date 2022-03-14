@@ -86,9 +86,9 @@ final class ValidAdapterTest extends TestCase
         $this->ossAdapter->createDirectory('fixture/path', new Config());
         self::assertTrue($this->ossAdapter->directoryExists('fixture/path'));
         self::assertSame([], iterator_to_array($this->ossAdapter->listContents('fixture/path', false)));
-        self::assertSame([], iterator_to_array($this->ossAdapter->listContents('fixture/path/',false)));
+        self::assertSame([], iterator_to_array($this->ossAdapter->listContents('fixture/path/', false)));
         $this->ossAdapter->write('fixture/path1/file.txt', 'test', new Config());
-        $contents = iterator_to_array($this->ossAdapter->listContents('fixture/path1',false));
+        $contents = iterator_to_array($this->ossAdapter->listContents('fixture/path1', false));
         self::assertCount(1, $contents);
         $file = $contents[0];
         self::assertSame('fixture/path1/file.txt', $file['path']);

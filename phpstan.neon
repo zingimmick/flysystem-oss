@@ -9,3 +9,4 @@ parameters:
     ignoreErrors:
         - '#unction GuzzleHttp\\Psr7\\stream_for not found.#'
         - "#Cannot access offset 'x-oss-object-acl' on mixed.#"
+        - '#Dead catch - OSS\\Core\\OssException is never thrown in the try block.#'
