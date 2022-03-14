@@ -155,9 +155,9 @@ final class MockAdapterTest extends TestCase
             ->andReturn(new ObjectListInfo('test', 'path/', '', '', '1000', '/', null, [
                 new ObjectInfo('path/', '', '', '', '', ''),
             ], []));
-        $this->legacyMock->shouldReceive('deleteObject')
+        $this->legacyMock->shouldReceive('deleteObjects')
             ->once()
-            ->withArgs(['test', 'path/']);
+            ->withArgs(['test', ['path/']]);
         $this->ossAdapter->createDirectory('path', new Config());
         self::assertTrue($this->ossAdapter->directoryExists('path'));
         self::assertSame([], iterator_to_array($this->ossAdapter->listContents('path', false)));
@@ -224,10 +224,8 @@ final class MockAdapterTest extends TestCase
         $this->mockGetMetadata('path/file.txt');
         $this->legacyMock->shouldReceive('getObjectMeta')
             ->withArgs(['test', 'path'])->andThrow(new \OSS\Core\OssException('mock test'));
-        $this->legacyMock->shouldReceive('deleteObject')
-            ->withArgs(['test', 'path/'])->andReturn(null);
-        $this->legacyMock->shouldReceive('deleteObject')
-            ->withArgs(['test', 'path/file.txt'])->andReturn(null);
+        $this->legacyMock->shouldReceive('deleteObjects')
+            ->withArgs(['test',[ 'path/','path/file.txt']])->andReturn(null);
         $this->ossAdapter->deleteDirectory('path');
         self::assertTrue(true);
     }

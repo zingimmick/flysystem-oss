@@ -200,12 +200,16 @@ class OssAdapter implements FilesystemAdapter
 
     public function deleteDirectory(string $path): void
     {
-        $files = $this->listContents($path, true);
-        foreach ($files as $file) {
-            $this->delete($file->isFile() ? $file->path() : $file->path() . '/');
+        $result = $this->listDirObjects($path, true);
+        $keys = array_column($result['objects'], 'key');
+        if ($keys !== []) {
+            try
+            {
+                $this->client->deleteObjects($this->bucket, $keys);
+            }catch (OssException $ossException){
+                throw UnableToCreateDirectory::dueToFailure($path, $ossException);
+            }
         }
-
-        $this->delete($path . '/');
     }
 
     public function createDirectory(string $path, Config $config): void
@@ -295,10 +299,15 @@ class OssAdapter implements FilesystemAdapter
      */
     public function listContents(string $path, bool $deep): iterable
     {
-        $directory = substr($path, -1) === '/' ? $path : $path . '/';
+        $directory = rtrim($path, '/');
         $result = $this->listDirObjects($directory, $deep);
 
         foreach ($result['objects'] as $files) {
+            $path = $this->pathPrefixer->stripDirectoryPrefix(rtrim($files['key']));
+            if ($path === $directory) {
+                continue;
+            }
+
             yield $this->mapObjectMetadata($files);
         }
 
@@ -461,10 +470,6 @@ class OssAdapter implements FilesystemAdapter
         $result['objects'] = [];
         if (! empty($objects)) {
             foreach ($objects as $object) {
-                if ($object->getKey() === $dirname) {
-                    continue;
-                }
-
                 $result['objects'][] = [
                     'prefix' => $dirname,
                     'key' => $object->getKey(),
