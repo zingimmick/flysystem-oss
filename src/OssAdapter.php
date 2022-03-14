@@ -51,6 +51,9 @@ class OssAdapter extends AbstractAdapter
         'x-oss-server-side-encryption-key-id',
     ];
 
+    /**
+     * @var string[]
+     */
     private const MUP_AVAILABLE_OPTIONS = [
         OssClient::OSS_CALLBACK,
         OssClient::OSS_CALLBACK_VAR,
@@ -435,6 +438,7 @@ class OssAdapter extends AbstractAdapter
         if ($mimeType) {
             $options[OssClient::OSS_CONTENT_TYPE] = $mimeType;
         }
+
         foreach (self::AVAILABLE_OPTIONS as $option) {
             $value = $config->get($option, '__NOT_SET__');
 
@@ -443,13 +447,14 @@ class OssAdapter extends AbstractAdapter
             }
         }
 
-        foreach (static::MUP_AVAILABLE_OPTIONS as $option) {
+        foreach (self::MUP_AVAILABLE_OPTIONS as $option) {
             $value = $config->get($option, '__NOT_SET__');
 
             if ($value !== '__NOT_SET__') {
                 $options[$option] = $value;
             }
         }
+
         return $options;
     }
 

@@ -345,7 +345,7 @@ final class MockAdapterTest extends TestCase
             ->withArgs([
                 'test', 'file.txt', 'write', [
                     'endpoint' => 'oss-cn-shanghai.aliyuncs.com',
-                    'headers'=>[
+                    'headers' => [
                         'Expires' => 20,
                     ],
                     'Content-Type' => 'text/plain',
