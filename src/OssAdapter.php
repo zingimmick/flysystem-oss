@@ -239,7 +239,9 @@ class OssAdapter implements FilesystemAdapter
         }
 
         try {
-            $this->client->deleteObjects($this->bucket, $keys);
+            foreach (array_chunk($keys, 1000) as $items) {
+                $this->client->deleteObjects($this->bucket, $items);
+            }
         } catch (OssException $ossException) {
             throw UnableToDeleteDirectory::atLocation($path, '', $ossException);
         }

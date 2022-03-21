@@ -253,6 +253,7 @@ final class MockAdapterTest extends TestCase
     public function provideVisibilities(): \Iterator
     {
         yield [Visibility::PUBLIC];
+
         yield [Visibility::PRIVATE];
     }
 
