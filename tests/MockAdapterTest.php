@@ -19,7 +19,7 @@ use Zing\Flysystem\Oss\OssAdapter;
 final class MockAdapterTest extends TestCase
 {
     /**
-     * @var \Mockery\LegacyMockInterface|\Mockery\MockInterface|\OSS\OssClient
+     * @var \Mockery\MockInterface&\OSS\OssClient
      */
     private $client;
 
