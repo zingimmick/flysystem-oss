@@ -3,6 +3,11 @@
     "description": "OSS filesystem adapter for Flysystem.",
     "keywords": ["oss", "flysystem", "filesystem", "storage", "file", "files"],
     "license": "MIT",
+    "homepage": "https://github.com/zingimmick/flysystem-oss",
+    "support": {
+        "issues": "https://github.com/zingimmick/flysystem-oss/issues",
+        "source": "https://github.com/zingimmick/flysystem-oss"
+    },
     "authors": [
         {
             "name": "zingimmick",
