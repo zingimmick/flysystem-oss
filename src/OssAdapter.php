@@ -192,7 +192,7 @@ class OssAdapter implements FilesystemAdapter
         try {
             $this->client->putObject($this->bucket, $this->pathPrefixer->prefixPath($path), $contents, $options);
         } catch (OssException $ossException) {
-            throw UnableToWriteFile::atLocation($path, '', $ossException);
+            throw UnableToWriteFile::atLocation($path, $ossException->getMessage(), $ossException);
         }
     }
 
@@ -226,7 +226,7 @@ class OssAdapter implements FilesystemAdapter
         try {
             $this->client->deleteObject($this->bucket, $this->pathPrefixer->prefixPath($path));
         } catch (OssException $ossException) {
-            throw UnableToDeleteFile::atLocation($path, '', $ossException);
+            throw UnableToDeleteFile::atLocation($path, $ossException->getMessage(), $ossException);
         }
     }
 
@@ -243,7 +243,7 @@ class OssAdapter implements FilesystemAdapter
                 $this->client->deleteObjects($this->bucket, $items);
             }
         } catch (OssException $ossException) {
-            throw UnableToDeleteDirectory::atLocation($path, '', $ossException);
+            throw UnableToDeleteDirectory::atLocation($path, $ossException->getMessage(), $ossException);
         }
     }
 
@@ -270,7 +270,7 @@ class OssAdapter implements FilesystemAdapter
                 $this->visibilityConverter->visibilityToAcl($visibility)
             );
         } catch (OssException $ossException) {
-            throw UnableToSetVisibility::atLocation($path, '', $ossException);
+            throw UnableToSetVisibility::atLocation($path, $ossException->getMessage(), $ossException);
         }
     }
 
@@ -279,7 +279,7 @@ class OssAdapter implements FilesystemAdapter
         try {
             $result = $this->client->getObjectAcl($this->bucket, $this->pathPrefixer->prefixPath($path));
         } catch (OssException $ossException) {
-            throw UnableToRetrieveMetadata::visibility($path, '', $ossException);
+            throw UnableToRetrieveMetadata::visibility($path, $ossException->getMessage(), $ossException);
         }
 
         $visibility = $this->visibilityConverter->aclToVisibility($result);
@@ -360,7 +360,7 @@ class OssAdapter implements FilesystemAdapter
             /** @var array{key?: string, prefix: ?string, content-length?: string, size?: int, last-modified?: string, content-type?: string} $metadata */
             $metadata = $this->client->getObjectMeta($this->bucket, $this->pathPrefixer->prefixPath($path));
         } catch (OssException $ossException) {
-            throw UnableToRetrieveMetadata::create($path, $type, '', $ossException);
+            throw UnableToRetrieveMetadata::create($path, $type, $ossException->getMessage(), $ossException);
         }
 
         $attributes = $this->mapObjectMetadata($metadata, $path);
@@ -454,7 +454,7 @@ class OssAdapter implements FilesystemAdapter
         try {
             return $this->client->getObject($this->bucket, $this->pathPrefixer->prefixPath($path));
         } catch (OssException $ossException) {
-            throw UnableToReadFile::fromLocation($path, '', $ossException);
+            throw UnableToReadFile::fromLocation($path, $ossException->getMessage(), $ossException);
         }
     }
 
