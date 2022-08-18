@@ -6,7 +6,6 @@ namespace Zing\Flysystem\Oss;
 
 use DateTimeInterface;
 use GuzzleHttp\Psr7\Uri;
-use GuzzleHttp\Psr7\Utils;
 use League\Flysystem\Adapter\AbstractAdapter;
 use League\Flysystem\AdapterInterface;
 use League\Flysystem\Config;
@@ -121,10 +120,10 @@ class OssAdapter extends AbstractAdapter
      */
     public function writeStream($path, $resource, Config $config): bool
     {
-        return $this->upload($path, stream_get_contents($resource) ?: '', $config);
+        return $this->upload($path, $resource, $config);
     }
 
-    private function upload(string $path, string $contents, Config $config): bool
+    private function upload(string $path, $contents, Config $config): bool
     {
         $options = $this->createOptionsFromConfig($config);
         if (! isset($options[OssClient::OSS_HEADERS][OssClient::OSS_OBJECT_ACL])) {
@@ -145,7 +144,11 @@ class OssAdapter extends AbstractAdapter
         }
 
         try {
-            $this->client->putObject($this->bucket, $this->applyPathPrefix($path), $contents, $options);
+            if (\is_string($contents)) {
+                $this->client->putObject($this->bucket, $this->applyPathPrefix($path), $contents, $options);
+            } else {
+                $this->client->uploadStream($this->bucket, $this->applyPathPrefix($path), $contents, $options);
+            }
         } catch (OssException $ossException) {
             return false;
         }
@@ -239,18 +242,18 @@ class OssAdapter extends AbstractAdapter
      */
     public function readStream($path)
     {
-        try {
-            $response = $this->getObject($path);
-            if ($response === false) {
-                return false;
-            }
+        /** @var resource $stream */
+        $stream = fopen('php://temp', 'w+b');
 
-            /** @var resource $resource */
-            $resource = Utils::streamFor($this->getObject($path))->detach();
+        try {
+            $this->client->getObject($this->bucket, $this->applyPathPrefix($path), [
+                OssClient::OSS_FILE_DOWNLOAD => $stream,
+            ]);
+            rewind($stream);
 
             return [
                 'path' => $path,
-                'stream' => $resource,
+                'stream' => $stream,
             ];
         } catch (OssException $ossException) {
             return false;
@@ -571,7 +574,7 @@ class OssAdapter extends AbstractAdapter
 
     public function updateStream($path, $resource, Config $config): bool
     {
-        return $this->upload($path, stream_get_contents($resource) ?: '', $config);
+        return $this->upload($path, $resource, $config);
     }
 
     public function deleteDir($dirname): bool

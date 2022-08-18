@@ -42,7 +42,7 @@ final class MockAdapterTest extends TestCase
                     'endpoint' => 'oss-cn-shanghai.aliyuncs.com',
                     'Content-Type' => 'text/plain',
                 ],
-            ])->andReturn(([]));
+            ])->andReturn([]);
         $this->ossAdapter->write('fixture/read.txt', 'read-test', new Config());
     }
 
@@ -71,20 +71,22 @@ final class MockAdapterTest extends TestCase
                 ],
             ])->andReturn(null);
         $this->ossAdapter->write('file.txt', 'write', new Config());
-        $this->client->shouldReceive('putObject')
+        $stream = $this->streamFor('update')
+            ->detach();
+        $this->client->shouldReceive('uploadStream')
             ->withArgs([
-                'test', 'file.txt', 'update', [
+                'test', 'file.txt', $stream, [
                     'endpoint' => 'oss-cn-shanghai.aliyuncs.com',
                     'Content-Type' => 'text/plain',
                 ],
             ])->andReturn(null);
-        $this->ossAdapter->updateStream('file.txt', $this->streamFor('update')->detach(), new Config());
+        $this->ossAdapter->updateStream('file.txt', $stream, new Config());
         $this->client->shouldReceive('getObject')
             ->withArgs(['test', 'file.txt'])->andReturn('update');
         self::assertSame('update', $this->ossAdapter->read('file.txt')['contents']);
     }
 
-    private function mockPutObject(string $path, string $body, ?string $visibility = null): void
+    private function mockPutObject(string $path, $body, ?string $visibility = null): void
     {
         $arg = ['test', $path, $body];
         if ($visibility !== null) {
@@ -102,7 +104,7 @@ final class MockAdapterTest extends TestCase
             ];
         }
 
-        $this->client->shouldReceive('putObject')
+        $this->client->shouldReceive(\is_resource($body) ? 'uploadStream' : 'putObject')
             ->withArgs($arg)
             ->andReturn(null);
     }
@@ -156,7 +158,7 @@ final class MockAdapterTest extends TestCase
                 ),
             ], []));
         $this->client->shouldReceive('getObjectMetadata')
-            ->withArgs([['test', 'path/']])->andReturn(([
+            ->withArgs([['test', 'path/']])->andReturn([
                 'ContentLength' => 0,
                 'Date' => 'Mon, 31 May 2021 06:52:32 GMT',
                 'RequestId' => '00000179C13207EF9217A7F5589D2DC6',
@@ -182,7 +184,7 @@ final class MockAdapterTest extends TestCase
                 'Metadata' => [],
                 'HttpStatusCode' => 200,
                 'Reason' => 'OK',
-            ]));
+            ]);
         self::assertSame([], $this->ossAdapter->listContents('path'));
     }
 
@@ -204,7 +206,7 @@ final class MockAdapterTest extends TestCase
             $this->ossAdapter->getVisibility('file.txt')['visibility']
         );
         $this->client->shouldReceive('putObjectAcl')
-            ->withArgs(['test', 'file.txt', 'public-read'])->andReturn(([
+            ->withArgs(['test', 'file.txt', 'public-read'])->andReturn([
                 'ContentLength' => '0',
                 'Date' => 'Mon, 31 May 2021 06:52:31 GMT',
                 'RequestId' => '00000179C132053492179E666378BF10',
@@ -212,7 +214,7 @@ final class MockAdapterTest extends TestCase
                 'Reserved' => 'amazon, aws and amazon web services are trademarks or registered trademarks of Amazon Technologies, Inc',
                 'HttpStatusCode' => 200,
                 'Reason' => 'OK',
-            ]));
+            ]);
         $this->ossAdapter->setVisibility('file.txt', AdapterInterface::VISIBILITY_PUBLIC);
 
         self::assertSame(
@@ -300,8 +302,10 @@ final class MockAdapterTest extends TestCase
 
     public function testWriteStream(): void
     {
-        $this->mockPutObject('file.txt', 'write');
-        $this->ossAdapter->writeStream('file.txt', $this->streamFor('write')->detach(), new Config());
+        $stream = $this->streamFor('write')
+            ->detach();
+        $this->mockPutObject('file.txt', $stream);
+        $this->ossAdapter->writeStream('file.txt', $stream, new Config());
         $this->mockGetObject('file.txt', 'write');
         self::assertSame('write', $this->ossAdapter->read('file.txt')['contents']);
     }
@@ -332,8 +336,10 @@ final class MockAdapterTest extends TestCase
      */
     public function testWriteStreamWithVisibility(string $visibility): void
     {
-        $this->mockPutObject('file.txt', 'write', $visibility);
-        $this->ossAdapter->writeStream('file.txt', $this->streamFor('write')->detach(), new Config([
+        $stream = $this->streamFor('write')
+            ->detach();
+        $this->mockPutObject('file.txt', $stream, $visibility);
+        $this->ossAdapter->writeStream('file.txt', $stream, new Config([
             'visibility' => $visibility,
         ]));
         $this->mockGetVisibility('file.txt', $visibility);
@@ -342,9 +348,11 @@ final class MockAdapterTest extends TestCase
 
     public function testWriteStreamWithExpires(): void
     {
-        $this->client->shouldReceive('putObject')
+        $stream = $this->streamFor('write')
+            ->detach();
+        $this->client->shouldReceive('uploadStream')
             ->withArgs([
-                'test', 'file.txt', 'write', [
+                'test', 'file.txt', $stream, [
                     'endpoint' => 'oss-cn-shanghai.aliyuncs.com',
                     'headers' => [
                         'Expires' => 20,
@@ -352,7 +360,7 @@ final class MockAdapterTest extends TestCase
                     'Content-Type' => 'text/plain',
                 ],
             ])->andReturn(null);
-        $this->ossAdapter->writeStream('file.txt', $this->streamFor('write')->detach(), new Config([
+        $this->ossAdapter->writeStream('file.txt', $stream, new Config([
             'Expires' => 20,
         ]));
         $this->mockGetObject('file.txt', 'write');
@@ -361,31 +369,35 @@ final class MockAdapterTest extends TestCase
 
     public function testWriteStreamWithMimetype(): void
     {
-        $this->client->shouldReceive('putObject')
+        $stream = $this->streamFor('write')
+            ->detach();
+        $this->client->shouldReceive('uploadStream')
             ->withArgs([
-                'test', 'file.txt', 'write', [
+                'test', 'file.txt', $stream, [
                     'endpoint' => 'oss-cn-shanghai.aliyuncs.com',
                     'Content-Type' => 'image/png',
                 ],
             ])->andReturn(null);
-        $this->ossAdapter->writeStream('file.txt', $this->streamFor('write')->detach(), new Config([
+        $this->ossAdapter->writeStream('file.txt', $stream, new Config([
             'mimetype' => 'image/png',
         ]));
         $this->client->shouldReceive('getObjectMeta')
             ->once()
-            ->withArgs(['test', 'file.txt'])->andReturn(([
+            ->withArgs(['test', 'file.txt'])->andReturn([
                 'content-length' => 9,
 
                 'last-modified' => 'Mon, 31 May 2021 06:52:32 GMT',
                 'content-type' => 'image/png',
-            ]));
+            ]);
         self::assertSame('image/png', $this->ossAdapter->getMimetype('file.txt')['mimetype']);
     }
 
     public function testDelete(): void
     {
-        $this->mockPutObject('file.txt', 'write');
-        $this->ossAdapter->writeStream('file.txt', $this->streamFor('write')->detach(), new Config());
+        $stream = $this->streamFor('write')
+            ->detach();
+        $this->mockPutObject('file.txt', $stream);
+        $this->ossAdapter->writeStream('file.txt', $stream, new Config());
         $this->client->shouldReceive('doesObjectExist')
             ->once()
             ->withArgs(['test', 'file.txt'])->andReturn(true);
@@ -417,7 +429,11 @@ final class MockAdapterTest extends TestCase
     public function testReadStream(): void
     {
         $this->client->shouldReceive('getObject')
-            ->withArgs(['test', 'fixture/read.txt'])->andReturn('read-test');
+            ->withArgs(static function ($bucket, $object, $options): bool {
+                fwrite($options[OssClient::OSS_FILE_DOWNLOAD], 'read-test');
+
+                return $bucket === 'test' && $object === 'fixture/read.txt';
+            })->andReturn('');
         self::assertSame('read-test', stream_get_contents($this->ossAdapter->readStream('fixture/read.txt')['stream']));
     }
 
@@ -442,12 +458,12 @@ final class MockAdapterTest extends TestCase
     {
         $this->client->shouldReceive('getObjectMeta')
             ->once()
-            ->withArgs(['test', $path])->andReturn(([
+            ->withArgs(['test', $path])->andReturn([
                 'content-length' => 9,
 
                 'last-modified' => 'Mon, 31 May 2021 06:52:32 GMT',
                 'content-type' => 'text/plain',
-            ]));
+            ]);
     }
 
     public function testListContents(): void
@@ -472,7 +488,7 @@ final class MockAdapterTest extends TestCase
                 ], [])
             );
         $this->client->shouldReceive('getObjectMetadata')
-            ->withArgs([['test', 'path/']])->andReturn(([
+            ->withArgs([['test', 'path/']])->andReturn([
                 'ContentLength' => 0,
                 'Date' => 'Mon, 31 May 2021 06:52:32 GMT',
                 'RequestId' => '00000179C13207EF9217A7F5589D2DC6',
@@ -498,7 +514,7 @@ final class MockAdapterTest extends TestCase
                 'Metadata' => [],
                 'HttpStatusCode' => 200,
                 'Reason' => 'OK',
-            ]));
+            ]);
         self::assertNotEmpty($this->ossAdapter->listContents('path'));
         $this->client->shouldReceive('listObjects')
             ->withArgs(['test', [
