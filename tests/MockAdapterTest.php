@@ -60,12 +60,12 @@ final class MockAdapterTest extends TestCase
                 ];
         }
 
-        $arg = ['test', $path, \is_resource($body) ? stream_get_contents($body) : $body, $options];
+        $arg = ['test', $path, $body, $options];
         if (\is_resource($body)) {
             rewind($body);
         }
 
-        $this->legacyMock->shouldReceive('putObject')
+        $this->legacyMock->shouldReceive(\is_resource($body) ? 'uploadStream' : 'putObject')
             ->withArgs($arg)
             ->andReturn(null);
     }
@@ -283,11 +283,11 @@ final class MockAdapterTest extends TestCase
     public function testWriteStreamWithExpires(): void
     {
         $contents = $this->streamForResource('write');
-        $this->legacyMock->shouldReceive('putObject')
+        $this->legacyMock->shouldReceive('uploadStream')
             ->withArgs([
                 'test',
                 'file.txt',
-                stream_get_contents($contents), [
+                $contents, [
                     'Content-Type' => 'text/plain',
                     OssClient::OSS_HEADERS => [
                         'Expires' => 20,
@@ -305,10 +305,10 @@ final class MockAdapterTest extends TestCase
     public function testWriteStreamWithMimetype(): void
     {
         $contents = $this->streamForResource('write');
-        $this->legacyMock->shouldReceive('putObject')
+        $this->legacyMock->shouldReceive('uploadStream')
             ->withArgs([
                 'test',
-                'file.txt', stream_get_contents($contents), [
+                'file.txt', $contents, [
                     OssClient::OSS_HEADERS => [
                         OssClient::OSS_CONTENT_TYPE => 'image/png',
                     ],
@@ -363,7 +363,13 @@ final class MockAdapterTest extends TestCase
 
     public function testReadStream(): void
     {
-        $this->mockGetObject('fixture/read.txt', 'read-test');
+        $this->legacyMock->shouldReceive('getObject')
+            ->withArgs(static function ($bucket, $object, $options): bool {
+                fwrite($options[OssClient::OSS_FILE_DOWNLOAD], 'read-test');
+
+                return $bucket === 'test' && $object === 'fixture/read.txt';
+            })
+            ->andReturn('');
 
         self::assertSame('read-test', stream_get_contents($this->ossAdapter->readStream('fixture/read.txt')));
     }

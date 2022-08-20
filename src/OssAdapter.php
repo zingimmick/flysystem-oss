@@ -6,7 +6,6 @@ namespace Zing\Flysystem\Oss;
 
 use DateTimeInterface;
 use GuzzleHttp\Psr7\Uri;
-use GuzzleHttp\Psr7\Utils;
 use League\Flysystem\Config;
 use League\Flysystem\DirectoryAttributes;
 use League\Flysystem\FileAttributes;
@@ -164,10 +163,13 @@ class OssAdapter implements FilesystemAdapter
      */
     public function writeStream(string $path, $contents, Config $config): void
     {
-        $this->upload($path, stream_get_contents($contents) ?: '', $config);
+        $this->upload($path, $contents, $config);
     }
 
-    private function upload(string $path, string $contents, Config $config): void
+    /**
+     * @param string|resource $contents
+     */
+    private function upload(string $path, $contents, Config $config): void
     {
         $options = $this->createOptionsFromConfig($config);
         if (! isset($options[OssClient::OSS_HEADERS][OssClient::OSS_OBJECT_ACL])) {
@@ -190,7 +192,11 @@ class OssAdapter implements FilesystemAdapter
         }
 
         try {
-            $this->client->putObject($this->bucket, $this->pathPrefixer->prefixPath($path), $contents, $options);
+            if (\is_string($contents)) {
+                $this->client->putObject($this->bucket, $this->pathPrefixer->prefixPath($path), $contents, $options);
+            } else {
+                $this->client->uploadStream($this->bucket, $this->pathPrefixer->prefixPath($path), $contents, $options);
+            }
         } catch (OssException $ossException) {
             throw UnableToWriteFile::atLocation($path, $ossException->getMessage(), $ossException);
         }
@@ -323,10 +329,20 @@ class OssAdapter implements FilesystemAdapter
      */
     public function readStream(string $path)
     {
-        /** @var resource $resource */
-        $resource = Utils::streamFor($this->getObject($path))->detach();
+        /** @var resource $stream */
+        $stream = fopen('php://temp', 'w+b');
 
-        return $resource;
+        try {
+            $this->client->getObject($this->bucket, $this->pathPrefixer->prefixPath($path), [
+                OssClient::OSS_FILE_DOWNLOAD => $stream,
+            ]);
+        } catch (OssException $ossException) {
+            throw UnableToReadFile::fromLocation($path, $ossException->getMessage(), $ossException);
+        }
+
+        rewind($stream);
+
+        return $stream;
     }
 
     /**
