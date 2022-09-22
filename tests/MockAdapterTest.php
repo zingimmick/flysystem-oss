@@ -604,4 +604,84 @@ final class MockAdapterTest extends TestCase
         $this->ossAdapter->createDirectory('fixture/exists-directory', new Config());
         self::assertTrue($this->ossAdapter->directoryExists('fixture/exists-directory'));
     }
+
+    public function testMovingAFileWithVisibility(): void
+    {
+        $this->mockPutObject('source.txt', 'contents to be copied', Visibility::PUBLIC);
+        $this->legacyMock->shouldReceive('copyObject')
+            ->withArgs([
+                'test', 'source.txt', 'test', 'destination.txt', [
+                    OssClient::OSS_HEADERS => [
+                        OssClient::OSS_OBJECT_ACL => OssClient::OSS_ACL_TYPE_PRIVATE,
+                    ],
+                ],
+            ]);
+        $this->legacyMock->shouldReceive('deleteObject')
+            ->withArgs(['test', 'source.txt']);
+        $this->legacyMock->shouldReceive('doesObjectExist')
+            ->withArgs(['test', 'source.txt'])->andReturn(false);
+        $this->legacyMock->shouldReceive('doesObjectExist')
+            ->withArgs(['test', 'destination.txt'])->andReturn(true);
+        $this->mockGetVisibility('destination.txt', Visibility::PRIVATE);
+        $this->mockGetObject('destination.txt', 'contents to be copied');
+        $adapter = $this->ossAdapter;
+        $adapter->write(
+            'source.txt',
+            'contents to be copied',
+            new Config([
+                Config::OPTION_VISIBILITY => Visibility::PUBLIC,
+            ])
+        );
+        $adapter->move('source.txt', 'destination.txt', new Config([
+            Config::OPTION_VISIBILITY => Visibility::PRIVATE,
+        ]));
+        self::assertFalse(
+            $adapter->fileExists('source.txt'),
+            'After moving a file should no longer exist in the original location.'
+        );
+        self::assertTrue(
+            $adapter->fileExists('destination.txt'),
+            'After moving, a file should be present at the new location.'
+        );
+        self::assertSame(Visibility::PRIVATE, $adapter->visibility('destination.txt')->visibility());
+        self::assertSame('contents to be copied', $adapter->read('destination.txt'));
+    }
+
+    public function testCopyingAFileWithVisibility(): void
+    {
+        $this->mockPutObject('source.txt', 'contents to be copied', Visibility::PUBLIC);
+        $this->legacyMock->shouldReceive('copyObject')
+            ->withArgs([
+                'test', 'source.txt', 'test', 'destination.txt', [
+                    OssClient::OSS_HEADERS => [
+                        OssClient::OSS_OBJECT_ACL => OssClient::OSS_ACL_TYPE_PRIVATE,
+                    ],
+                ],
+            ]);
+        $this->legacyMock->shouldReceive('deleteObject')
+            ->withArgs(['test', 'source.txt']);
+        $this->legacyMock->shouldReceive('doesObjectExist')
+            ->withArgs(['test', 'source.txt'])->andReturn(true);
+        $this->legacyMock->shouldReceive('doesObjectExist')
+            ->withArgs(['test', 'destination.txt'])->andReturn(true);
+        $this->mockGetVisibility('destination.txt', Visibility::PRIVATE);
+        $this->mockGetObject('destination.txt', 'contents to be copied');
+        $adapter = $this->ossAdapter;
+        $adapter->write(
+            'source.txt',
+            'contents to be copied',
+            new Config([
+                Config::OPTION_VISIBILITY => Visibility::PUBLIC,
+            ])
+        );
+
+        $adapter->copy('source.txt', 'destination.txt', new Config([
+            Config::OPTION_VISIBILITY => Visibility::PRIVATE,
+        ]));
+
+        self::assertTrue($adapter->fileExists('source.txt'));
+        self::assertTrue($adapter->fileExists('destination.txt'));
+        self::assertSame(Visibility::PRIVATE, $adapter->visibility('destination.txt')->visibility());
+        self::assertSame('contents to be copied', $adapter->read('destination.txt'));
+    }
 }

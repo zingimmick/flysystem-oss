@@ -569,6 +569,14 @@ class OssAdapter implements FilesystemAdapter
             $options[OssClient::OSS_CONTENT_TYPE] = $mimeType;
         }
 
+        /** @var string|null $visibility */
+        $visibility = $config->get(Config::OPTION_VISIBILITY);
+        if ($visibility) {
+            $options[OssClient::OSS_HEADERS][OssClient::OSS_OBJECT_ACL] = $this->visibilityConverter->visibilityToAcl(
+                $visibility
+            );
+        }
+
         foreach (self::AVAILABLE_OPTIONS as $option) {
             $value = $config->get($option, '__NOT_SET__');
 
