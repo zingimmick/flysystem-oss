@@ -30,10 +30,7 @@ final class MockAdapterTest extends TestCase
      */
     private $legacyMock;
 
-    /**
-     * @var \Zing\Flysystem\Oss\OssAdapter
-     */
-    private $ossAdapter;
+    private \Zing\Flysystem\Oss\OssAdapter $ossAdapter;
 
     protected function setUp(): void
     {

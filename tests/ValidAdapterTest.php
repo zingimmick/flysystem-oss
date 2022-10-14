@@ -17,10 +17,7 @@ use Zing\Flysystem\Oss\OssAdapter;
  */
 final class ValidAdapterTest extends TestCase
 {
-    /**
-     * @var \Zing\Flysystem\Oss\OssAdapter
-     */
-    private $ossAdapter;
+    private \Zing\Flysystem\Oss\OssAdapter $ossAdapter;
 
     private function getKey(): string
     {

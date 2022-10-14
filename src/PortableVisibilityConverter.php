@@ -19,22 +19,10 @@ class PortableVisibilityConverter implements VisibilityConverter
      */
     private const PRIVATE_ACL = OssClient::OSS_ACL_TYPE_PRIVATE;
 
-    /**
-     * @var string
-     */
-    private $defaultForDirectories;
-
-    /**
-     * @var string
-     */
-    private $default;
-
     public function __construct(
-        string $default = Visibility::PUBLIC,
-        string $defaultForDirectories = Visibility::PUBLIC
+        private string $default = Visibility::PUBLIC,
+        private string $defaultForDirectories = Visibility::PUBLIC
     ) {
-        $this->defaultForDirectories = $defaultForDirectories;
-        $this->default = $default;
     }
 
     public function visibilityToAcl(string $visibility): string
@@ -48,17 +36,11 @@ class PortableVisibilityConverter implements VisibilityConverter
 
     public function aclToVisibility(string $acl): string
     {
-        switch ($acl) {
-            case OssClient::OSS_ACL_TYPE_PRIVATE:
-                return Visibility::PRIVATE;
-
-            case OssClient::OSS_ACL_TYPE_PUBLIC_READ:
-            case OssClient::OSS_ACL_TYPE_PUBLIC_READ_WRITE:
-                return Visibility::PUBLIC;
-
-            default:
-                return $this->default;
-        }
+        return match ($acl) {
+            OssClient::OSS_ACL_TYPE_PRIVATE => Visibility::PRIVATE,
+            OssClient::OSS_ACL_TYPE_PUBLIC_READ, OssClient::OSS_ACL_TYPE_PUBLIC_READ_WRITE => Visibility::PUBLIC,
+            default => $this->default,
+        };
     }
 
     public function defaultForDirectories(): string

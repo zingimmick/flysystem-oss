@@ -83,54 +83,29 @@ class OssAdapter implements FilesystemAdapter
         OssClient::OSS_HEADERS,
     ];
 
-    /**
-     * @var string
-     */
-    protected $bucket;
+    private \League\Flysystem\PathPrefixer $pathPrefixer;
 
-    /**
-     * @var mixed[]|array<string, bool>|array<string, string>
-     * @phpstan-var array{url?: string, temporary_url?: string, endpoint?: string, bucket_endpoint?: bool}
-     */
-    protected $options = [];
+    private \Zing\Flysystem\Oss\PortableVisibilityConverter|\Zing\Flysystem\Oss\VisibilityConverter $visibilityConverter;
 
-    /**
-     * @var \OSS\OssClient
-     */
-    protected $client;
-
-    /**
-     * @var \League\Flysystem\PathPrefixer
-     */
-    private $pathPrefixer;
-
-    /**
-     * @var \Zing\Flysystem\Oss\PortableVisibilityConverter|\Zing\Flysystem\Oss\VisibilityConverter
-     */
-    private $visibilityConverter;
-
-    /**
-     * @var \League\MimeTypeDetection\FinfoMimeTypeDetector|\League\MimeTypeDetection\MimeTypeDetector
-     */
-    private $mimeTypeDetector;
+    private \League\MimeTypeDetection\FinfoMimeTypeDetector|\League\MimeTypeDetection\MimeTypeDetector $mimeTypeDetector;
 
     /**
      * @param array{url?: string, temporary_url?: string, endpoint?: string, bucket_endpoint?: bool} $options
      */
     public function __construct(
-        OssClient $client,
-        string $bucket,
+        protected OssClient $ossClient,
+        protected string $bucket,
         string $prefix = '',
         ?VisibilityConverter $visibility = null,
         ?MimeTypeDetector $mimeTypeDetector = null,
-        array $options = []
+        /**
+         * @phpstan-var array{url?: string, temporary_url?: string, endpoint?: string, bucket_endpoint?: bool}
+         */
+        protected array $options = []
     ) {
-        $this->client = $client;
-        $this->bucket = $bucket;
         $this->pathPrefixer = new PathPrefixer($prefix);
         $this->visibilityConverter = $visibility ?: new PortableVisibilityConverter();
         $this->mimeTypeDetector = $mimeTypeDetector ?: new FinfoMimeTypeDetector();
-        $this->options = $options;
     }
 
     public function getBucket(): string
@@ -140,7 +115,7 @@ class OssAdapter implements FilesystemAdapter
 
     public function getClient(): OssClient
     {
-        return $this->client;
+        return $this->ossClient;
     }
 
     public function write(string $path, string $contents, Config $config): void
@@ -193,9 +168,14 @@ class OssAdapter implements FilesystemAdapter
 
         try {
             if (\is_string($contents)) {
-                $this->client->putObject($this->bucket, $this->pathPrefixer->prefixPath($path), $contents, $options);
+                $this->ossClient->putObject($this->bucket, $this->pathPrefixer->prefixPath($path), $contents, $options);
             } else {
-                $this->client->uploadStream($this->bucket, $this->pathPrefixer->prefixPath($path), $contents, $options);
+                $this->ossClient->uploadStream(
+                    $this->bucket,
+                    $this->pathPrefixer->prefixPath($path),
+                    $contents,
+                    $options
+                );
             }
         } catch (OssException $ossException) {
             throw UnableToWriteFile::atLocation($path, $ossException->getMessage(), $ossException);
@@ -207,7 +187,7 @@ class OssAdapter implements FilesystemAdapter
         try {
             $this->copy($source, $destination, $config);
             $this->delete($source);
-        } catch (FilesystemOperationFailed $filesystemOperationFailed) {
+        } catch (FilesystemOperationFailed) {
             throw UnableToMoveFile::fromLocationTo($source, $destination);
         }
     }
@@ -215,7 +195,7 @@ class OssAdapter implements FilesystemAdapter
     public function copy(string $source, string $destination, Config $config): void
     {
         try {
-            $this->client->copyObject(
+            $this->ossClient->copyObject(
                 $this->bucket,
                 $this->pathPrefixer->prefixPath($source),
                 $this->bucket,
@@ -230,7 +210,7 @@ class OssAdapter implements FilesystemAdapter
     public function delete(string $path): void
     {
         try {
-            $this->client->deleteObject($this->bucket, $this->pathPrefixer->prefixPath($path));
+            $this->ossClient->deleteObject($this->bucket, $this->pathPrefixer->prefixPath($path));
         } catch (OssException $ossException) {
             throw UnableToDeleteFile::atLocation($path, $ossException->getMessage(), $ossException);
         }
@@ -246,7 +226,7 @@ class OssAdapter implements FilesystemAdapter
 
         try {
             foreach (array_chunk($keys, 1000) as $items) {
-                $this->client->deleteObjects($this->bucket, $items);
+                $this->ossClient->deleteObjects($this->bucket, $items);
             }
         } catch (OssException $ossException) {
             throw UnableToDeleteDirectory::atLocation($path, $ossException->getMessage(), $ossException);
@@ -270,7 +250,7 @@ class OssAdapter implements FilesystemAdapter
     public function setVisibility(string $path, string $visibility): void
     {
         try {
-            $this->client->putObjectAcl(
+            $this->ossClient->putObjectAcl(
                 $this->bucket,
                 $this->pathPrefixer->prefixPath($path),
                 $this->visibilityConverter->visibilityToAcl($visibility)
@@ -283,7 +263,7 @@ class OssAdapter implements FilesystemAdapter
     public function visibility(string $path): FileAttributes
     {
         try {
-            $result = $this->client->getObjectAcl($this->bucket, $this->pathPrefixer->prefixPath($path));
+            $result = $this->ossClient->getObjectAcl($this->bucket, $this->pathPrefixer->prefixPath($path));
         } catch (OssException $ossException) {
             throw UnableToRetrieveMetadata::visibility($path, $ossException->getMessage(), $ossException);
         }
@@ -296,7 +276,7 @@ class OssAdapter implements FilesystemAdapter
     public function fileExists(string $path): bool
     {
         try {
-            return $this->client->doesObjectExist($this->bucket, $this->pathPrefixer->prefixPath($path));
+            return $this->ossClient->doesObjectExist($this->bucket, $this->pathPrefixer->prefixPath($path));
         } catch (OssException $ossException) {
             throw UnableToCheckFileExistence::forLocation($path, $ossException);
         }
@@ -311,7 +291,7 @@ class OssAdapter implements FilesystemAdapter
                 'delimiter' => '/',
                 'max-keys' => 1,
             ];
-            $model = $this->client->listObjects($this->bucket, $options);
+            $model = $this->ossClient->listObjects($this->bucket, $options);
 
             return $model->getObjectList() !== [];
         } catch (OssException $ossException) {
@@ -333,7 +313,7 @@ class OssAdapter implements FilesystemAdapter
         $stream = fopen('php://temp', 'w+b');
 
         try {
-            $this->client->getObject($this->bucket, $this->pathPrefixer->prefixPath($path), [
+            $this->ossClient->getObject($this->bucket, $this->pathPrefixer->prefixPath($path), [
                 OssClient::OSS_FILE_DOWNLOAD => $stream,
             ]);
         } catch (OssException $ossException) {
@@ -374,7 +354,7 @@ class OssAdapter implements FilesystemAdapter
     {
         try {
             /** @var array{key?: string, prefix: ?string, content-length?: string, size?: int, last-modified?: string, content-type?: string} $metadata */
-            $metadata = $this->client->getObjectMeta($this->bucket, $this->pathPrefixer->prefixPath($path));
+            $metadata = $this->ossClient->getObjectMeta($this->bucket, $this->pathPrefixer->prefixPath($path));
         } catch (OssException $ossException) {
             throw UnableToRetrieveMetadata::create($path, $type, $ossException->getMessage(), $ossException);
         }
@@ -397,7 +377,7 @@ class OssAdapter implements FilesystemAdapter
             $path = $this->pathPrefixer->stripPrefix((string) ($metadata['key'] ?? $metadata['prefix']));
         }
 
-        if (substr($path, -1) === '/') {
+        if (str_ends_with($path, '/')) {
             return new DirectoryAttributes(rtrim($path, '/'));
         }
 
@@ -468,7 +448,7 @@ class OssAdapter implements FilesystemAdapter
     protected function getObject(string $path): string
     {
         try {
-            return $this->client->getObject($this->bucket, $this->pathPrefixer->prefixPath($path));
+            return $this->ossClient->getObject($this->bucket, $this->pathPrefixer->prefixPath($path));
         } catch (OssException $ossException) {
             throw UnableToReadFile::fromLocation($path, $ossException->getMessage(), $ossException);
         }
@@ -495,7 +475,7 @@ class OssAdapter implements FilesystemAdapter
         ];
         while (true) {
             $options['marker'] = $nextMarker;
-            $model = $this->client->listObjects($this->bucket, $options);
+            $model = $this->ossClient->listObjects($this->bucket, $options);
             $nextMarker = $model->getNextMarker();
             $objects = $model->getObjectList();
             $prefixes = $model->getPrefixList();
@@ -615,7 +595,7 @@ class OssAdapter implements FilesystemAdapter
         }
 
         $endpoint = $this->options['endpoint'];
-        if (strpos($endpoint, 'http') !== 0) {
+        if (! str_starts_with($endpoint, 'http')) {
             $endpoint = 'https://' . $endpoint;
         }
 
@@ -634,14 +614,17 @@ class OssAdapter implements FilesystemAdapter
     /**
      * Get a signed URL for the file at the given path.
      *
-     * @param \DateTimeInterface|int $expiration
      * @param array<string, mixed> $options
      */
-    public function signUrl(string $path, $expiration, array $options = [], string $method = 'GET'): string
-    {
+    public function signUrl(
+        string $path,
+        DateTimeInterface|int $expiration,
+        array $options = [],
+        string $method = 'GET'
+    ): string {
         $expires = $expiration instanceof DateTimeInterface ? $expiration->getTimestamp() - time() : $expiration;
 
-        return $this->client->signUrl(
+        return $this->ossClient->signUrl(
             $this->bucket,
             $this->pathPrefixer->prefixPath($path),
             $expires,
@@ -653,11 +636,14 @@ class OssAdapter implements FilesystemAdapter
     /**
      * Get a temporary URL for the file at the given path.
      *
-     * @param \DateTimeInterface|int $expiration
      * @param array<string, mixed> $options
      */
-    public function getTemporaryUrl(string $path, $expiration, array $options = [], string $method = 'GET'): string
-    {
+    public function getTemporaryUrl(
+        string $path,
+        DateTimeInterface|int $expiration,
+        array $options = [],
+        string $method = 'GET'
+    ): string {
         $uri = new Uri($this->signUrl($path, $expiration, $options, $method));
 
         if (isset($this->options['temporary_url'])) {

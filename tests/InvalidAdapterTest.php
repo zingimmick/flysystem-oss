@@ -38,15 +38,9 @@ final class InvalidAdapterTest extends TestCase
         'region' => '',
     ];
 
-    /**
-     * @var \Zing\Flysystem\Oss\OssAdapter
-     */
-    private $ossAdapter;
+    private \Zing\Flysystem\Oss\OssAdapter $ossAdapter;
 
-    /**
-     * @var \OSS\OssClient
-     */
-    private $ossClient;
+    private \OSS\OssClient $ossClient;
 
     protected function setUp(): void
     {

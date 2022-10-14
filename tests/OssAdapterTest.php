@@ -31,10 +31,7 @@ final class OssAdapterTest extends FilesystemAdapterTestCase
         ) ?: '', 'github-test');
     }
 
-    /**
-     * @var \League\Flysystem\FilesystemAdapter
-     */
-    private $filesystemAdapter;
+    private \League\Flysystem\FilesystemAdapter $filesystemAdapter;
 
     protected function setUp(): void
     {
