@@ -19,18 +19,20 @@ use League\Flysystem\UnableToCopyFile;
 use League\Flysystem\UnableToCreateDirectory;
 use League\Flysystem\UnableToDeleteDirectory;
 use League\Flysystem\UnableToDeleteFile;
+use League\Flysystem\UnableToGeneratePublicUrl;
 use League\Flysystem\UnableToMoveFile;
 use League\Flysystem\UnableToReadFile;
 use League\Flysystem\UnableToRetrieveMetadata;
 use League\Flysystem\UnableToSetVisibility;
 use League\Flysystem\UnableToWriteFile;
+use League\Flysystem\UrlGeneration\PublicUrlGenerator;
 use League\MimeTypeDetection\FinfoMimeTypeDetector;
 use League\MimeTypeDetection\MimeTypeDetector;
 use OSS\Core\OssException;
 use OSS\OssClient;
 use Psr\Http\Message\UriInterface;
 
-class OssAdapter implements FilesystemAdapter
+class OssAdapter implements FilesystemAdapter, PublicUrlGenerator
 {
     /**
      * @var string[]
@@ -673,5 +675,16 @@ class OssAdapter implements FilesystemAdapter
             ->withScheme($parsed['scheme'])
             ->withHost($parsed['host'])
             ->withPort($parsed['port'] ?? null);
+    }
+
+    public function publicUrl(string $path, Config $config): string
+    {
+        $location = $this->pathPrefixer->prefixPath($path);
+
+        try {
+            return $this->concatPathToUrl($this->normalizeHost(), $location);
+        } catch (\Throwable $throwable) {
+            throw UnableToGeneratePublicUrl::dueToError($path, $throwable);
+        }
     }
 }
