@@ -6,6 +6,8 @@ namespace Zing\Flysystem\Oss;
 
 use DateTimeInterface;
 use GuzzleHttp\Psr7\Uri;
+use League\Flysystem\ChecksumAlgoIsNotSupported;
+use League\Flysystem\ChecksumProvider;
 use League\Flysystem\Config;
 use League\Flysystem\DirectoryAttributes;
 use League\Flysystem\FileAttributes;
@@ -21,6 +23,7 @@ use League\Flysystem\UnableToDeleteDirectory;
 use League\Flysystem\UnableToDeleteFile;
 use League\Flysystem\UnableToGeneratePublicUrl;
 use League\Flysystem\UnableToMoveFile;
+use League\Flysystem\UnableToProvideChecksum;
 use League\Flysystem\UnableToReadFile;
 use League\Flysystem\UnableToRetrieveMetadata;
 use League\Flysystem\UnableToSetVisibility;
@@ -32,7 +35,7 @@ use OSS\Core\OssException;
 use OSS\OssClient;
 use Psr\Http\Message\UriInterface;
 
-class OssAdapter implements FilesystemAdapter, PublicUrlGenerator
+class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvider
 {
     /**
      * @var string[]
@@ -686,5 +689,27 @@ class OssAdapter implements FilesystemAdapter, PublicUrlGenerator
         } catch (\Throwable $throwable) {
             throw UnableToGeneratePublicUrl::dueToError($path, $throwable);
         }
+    }
+
+    public function checksum(string $path, Config $config): string
+    {
+        $algo = $config->get('checksum_algo', 'etag');
+
+        if ($algo !== 'etag') {
+            throw new ChecksumAlgoIsNotSupported();
+        }
+
+        try {
+            $metadata = $this->getMetadata($path, 'checksum')
+                ->extraMetadata();
+        } catch (UnableToRetrieveMetadata $unableToRetrieveMetadata) {
+            throw new UnableToProvideChecksum($unableToRetrieveMetadata->reason(), $path, $unableToRetrieveMetadata);
+        }
+
+        if (! isset($metadata['etag'])) {
+            throw new UnableToProvideChecksum('ETag header not available.', $path);
+        }
+
+        return strtolower(trim($metadata['etag'], '"'));
     }
 }

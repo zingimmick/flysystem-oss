@@ -26,9 +26,11 @@ final class OssAdapterTest extends FilesystemAdapterTestCase
             'region' => '',
         ];
 
-        return new OssAdapter(new OssClient($config['key'], $config['secret'], $config['endpoint']), (string) getenv(
-            'ALIBABA_CLOUD_BUCKET'
-        ) ?: '', 'github-test', options: [
+        return new OssAdapter(new OssClient(
+            $config['key'],
+            $config['secret'],
+            $config['endpoint']
+        ), $config['bucket'] ?: '', 'github-test', options: [
             'endpoint' => $config['endpoint'],
         ]);
     }
