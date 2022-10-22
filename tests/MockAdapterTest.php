@@ -495,7 +495,7 @@ final class MockAdapterTest extends TestCase
         self::assertSame(9, $file->fileSize());
 
         self::assertNull($file->mimeType());
-        self::assertSame(1622474604, $file->lastModified());
+        self::assertSame(1_622_474_604, $file->lastModified());
         self::assertNull($file->visibility());
         self::assertSame([
             'x-oss-storage-class' => 'STANDARD_IA',
@@ -524,14 +524,14 @@ final class MockAdapterTest extends TestCase
     public function testGetTimestamp(): void
     {
         $this->mockGetMetadata('fixture/read.txt');
-        self::assertSame(1622443952, $this->ossAdapter->lastModified('fixture/read.txt')->lastModified());
+        self::assertSame(1_622_443_952, $this->ossAdapter->lastModified('fixture/read.txt')->lastModified());
     }
 
     public function testGetTimestampError(): void
     {
         $this->mockGetEmptyMetadata('fixture/read.txt');
         $this->expectException(UnableToRetrieveMetadata::class);
-        self::assertSame(1622443952, $this->ossAdapter->lastModified('fixture/read.txt')->lastModified());
+        self::assertSame(1_622_443_952, $this->ossAdapter->lastModified('fixture/read.txt')->lastModified());
     }
 
     public function testGetMimetype(): void

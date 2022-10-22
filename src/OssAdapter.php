@@ -724,7 +724,7 @@ class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvi
                 $this->pathPrefixer->prefixPath($path),
                 $expiresAt->getTimestamp(),
                 'GET',
-                $config->get('gcp_signing_options', [])
+                (array) $config->get('gcp_signing_options', [])
             );
         } catch (Throwable $throwable) {
             throw UnableToGenerateTemporaryUrl::dueToError($path, $throwable);
