@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Zing\Flysystem\Oss\Tests;
 
+use Iterator;
 use League\Flysystem\Config;
 use League\Flysystem\DirectoryAttributes;
 use League\Flysystem\FileAttributes;
@@ -17,7 +18,7 @@ use Zing\Flysystem\Oss\OssAdapter;
  */
 final class ValidAdapterTest extends TestCase
 {
-    private \Zing\Flysystem\Oss\OssAdapter $ossAdapter;
+    private OssAdapter $ossAdapter;
 
     private function getKey(): string
     {
@@ -138,7 +139,7 @@ final class ValidAdapterTest extends TestCase
     /**
      * @return \Iterator<string[]>
      */
-    public function provideVisibilities(): \Iterator
+    public function provideVisibilities(): Iterator
     {
         yield [Visibility::PUBLIC];
 
@@ -214,7 +215,7 @@ final class ValidAdapterTest extends TestCase
         self::assertCount(2, $contents);
         /** @var \League\Flysystem\FileAttributes $file */
         /** @var \League\Flysystem\DirectoryAttributes $directory */
-        [$file,$directory] = $contents[0]->isFile() ? [$contents[0], $contents[1]] : [$contents[1], $contents[0]];
+        [$file, $directory] = $contents[0]->isFile() ? [$contents[0], $contents[1]] : [$contents[1], $contents[0]];
         self::assertInstanceOf(FileAttributes::class, $file);
         self::assertSame('fixture/path/dir/file.txt', $file->path());
         self::assertSame(4, $file->fileSize());

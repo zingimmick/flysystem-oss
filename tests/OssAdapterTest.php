@@ -30,12 +30,12 @@ final class OssAdapterTest extends FilesystemAdapterTestCase
             $config['key'],
             $config['secret'],
             $config['endpoint']
-        ), $config['bucket'] ?: '', 'github-test', options: [
+        ), $config['bucket'] ?: '', 'github-test', null, null, [
             'endpoint' => $config['endpoint'],
         ]);
     }
 
-    private \League\Flysystem\FilesystemAdapter $filesystemAdapter;
+    private FilesystemAdapter $filesystemAdapter;
 
     protected function setUp(): void
     {

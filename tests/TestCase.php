@@ -6,6 +6,7 @@ namespace Zing\Flysystem\Oss\Tests;
 
 use GuzzleHttp\Psr7\Utils;
 use PHPUnit\Framework\TestCase as BaseTestCase;
+use Psr\Http\Message\StreamInterface;
 
 use function GuzzleHttp\Psr7\stream_for;
 
@@ -14,7 +15,7 @@ abstract class TestCase extends BaseTestCase
     /**
      * @param array{size?: int, metadata?: array<string, mixed>} $options
      */
-    protected function streamFor(string $content = '', array $options = []): \Psr\Http\Message\StreamInterface
+    protected function streamFor(string $content = '', array $options = []): StreamInterface
     {
         if (\function_exists('\GuzzleHttp\Psr7\stream_for')) {
             return stream_for($content, $options);

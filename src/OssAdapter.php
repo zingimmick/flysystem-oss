@@ -22,6 +22,7 @@ use League\Flysystem\UnableToCreateDirectory;
 use League\Flysystem\UnableToDeleteDirectory;
 use League\Flysystem\UnableToDeleteFile;
 use League\Flysystem\UnableToGeneratePublicUrl;
+use League\Flysystem\UnableToGenerateTemporaryUrl;
 use League\Flysystem\UnableToMoveFile;
 use League\Flysystem\UnableToProvideChecksum;
 use League\Flysystem\UnableToReadFile;
@@ -29,13 +30,15 @@ use League\Flysystem\UnableToRetrieveMetadata;
 use League\Flysystem\UnableToSetVisibility;
 use League\Flysystem\UnableToWriteFile;
 use League\Flysystem\UrlGeneration\PublicUrlGenerator;
+use League\Flysystem\UrlGeneration\TemporaryUrlGenerator;
 use League\MimeTypeDetection\FinfoMimeTypeDetector;
 use League\MimeTypeDetection\MimeTypeDetector;
 use OSS\Core\OssException;
 use OSS\OssClient;
 use Psr\Http\Message\UriInterface;
+use Throwable;
 
-class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvider
+class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvider, TemporaryUrlGenerator
 {
     /**
      * @var string[]
@@ -88,11 +91,11 @@ class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvi
         OssClient::OSS_HEADERS,
     ];
 
-    private \League\Flysystem\PathPrefixer $pathPrefixer;
+    private PathPrefixer $pathPrefixer;
 
-    private \Zing\Flysystem\Oss\PortableVisibilityConverter|\Zing\Flysystem\Oss\VisibilityConverter $visibilityConverter;
+    private PortableVisibilityConverter|VisibilityConverter $visibilityConverter;
 
-    private \League\MimeTypeDetection\FinfoMimeTypeDetector|\League\MimeTypeDetection\MimeTypeDetector $mimeTypeDetector;
+    private FinfoMimeTypeDetector|MimeTypeDetector $mimeTypeDetector;
 
     /**
      * @param array{url?: string, temporary_url?: string, endpoint?: string, bucket_endpoint?: bool} $options
@@ -192,8 +195,8 @@ class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvi
         try {
             $this->copy($source, $destination, $config);
             $this->delete($source);
-        } catch (FilesystemOperationFailed) {
-            throw UnableToMoveFile::fromLocationTo($source, $destination);
+        } catch (FilesystemOperationFailed $filesystemOperationFailed) {
+            throw UnableToMoveFile::fromLocationTo($source, $destination, $filesystemOperationFailed);
         }
     }
 
@@ -686,7 +689,7 @@ class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvi
 
         try {
             return $this->concatPathToUrl($this->normalizeHost(), $location);
-        } catch (\Throwable $throwable) {
+        } catch (Throwable $throwable) {
             throw UnableToGeneratePublicUrl::dueToError($path, $throwable);
         }
     }
@@ -711,5 +714,20 @@ class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvi
         }
 
         return strtolower(trim($metadata['etag'], '"'));
+    }
+
+    public function temporaryUrl(string $path, DateTimeInterface $expiresAt, Config $config): string
+    {
+        try {
+            return $this->ossClient->generatePresignedUrl(
+                $this->bucket,
+                $this->pathPrefixer->prefixPath($path),
+                $expiresAt->getTimestamp(),
+                'GET',
+                $config->get('gcp_signing_options', [])
+            );
+        } catch (Throwable $throwable) {
+            throw UnableToGenerateTemporaryUrl::dueToError($path, $throwable);
+        }
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Zing\Flysystem\Oss\Tests;
 
+use Iterator;
 use League\Flysystem\Config;
 use League\Flysystem\DirectoryAttributes;
 use League\Flysystem\FileAttributes;
@@ -14,6 +15,7 @@ use League\Flysystem\UnableToDeleteDirectory;
 use League\Flysystem\UnableToRetrieveMetadata;
 use League\Flysystem\Visibility;
 use Mockery;
+use OSS\Core\OssException;
 use OSS\Model\ObjectInfo;
 use OSS\Model\ObjectListInfo;
 use OSS\Model\PrefixInfo;
@@ -30,7 +32,7 @@ final class MockAdapterTest extends TestCase
      */
     private $legacyMock;
 
-    private \Zing\Flysystem\Oss\OssAdapter $ossAdapter;
+    private OssAdapter $ossAdapter;
 
     protected function setUp(): void
     {
@@ -84,13 +86,7 @@ final class MockAdapterTest extends TestCase
         $this->mockPutObject('file.txt', 'write');
         $this->ossAdapter->write('file.txt', 'write', new Config());
         $this->legacyMock->shouldReceive('copyObject')
-            ->withArgs([
-                'test',
-                'file.txt',
-                'test',
-                'copy.txt',
-                [],
-            ])->andThrow(new \OSS\Core\OssException('mock test'));
+            ->withArgs(['test', 'file.txt', 'test', 'copy.txt', []])->andThrow(new OssException('mock test'));
         $this->mockGetVisibility('file.txt', Visibility::PUBLIC);
         $this->expectException(UnableToCopyFile::class);
         $this->ossAdapter->copy('file.txt', 'copy.txt', new Config());
@@ -188,7 +184,7 @@ final class MockAdapterTest extends TestCase
         self::assertTrue($this->ossAdapter->fileExists('from.txt'));
         $this->legacyMock->shouldReceive('doesObjectExist')
             ->once()
-            ->withArgs(['test', 'to.txt'])->andThrow(new \OSS\Core\OssException('mock test'));
+            ->withArgs(['test', 'to.txt'])->andThrow(new OssException('mock test'));
         $this->expectException(UnableToCheckFileExistence::class);
         $this->ossAdapter->fileExists('to.txt');
         $this->legacyMock->shouldReceive('copyObject')
@@ -198,7 +194,7 @@ final class MockAdapterTest extends TestCase
         $this->mockGetVisibility('from.txt', Visibility::PUBLIC);
         $this->ossAdapter->move('from.txt', 'to.txt', new Config());
         $this->legacyMock->shouldReceive('doesObjectExist')
-            ->withArgs(['test', 'from.txt'])->andThrow(new \OSS\Core\OssException('mock test'));
+            ->withArgs(['test', 'from.txt'])->andThrow(new OssException('mock test'));
         self::assertFalse($this->ossAdapter->fileExists('from.txt'));
         $this->mockGetObject('to.txt', 'write');
         self::assertSame('write', $this->ossAdapter->read('to.txt'));
@@ -228,7 +224,7 @@ final class MockAdapterTest extends TestCase
         $this->legacyMock->shouldReceive('deleteObjects')
             ->once()
             ->withArgs(['test', ['path/', 'path/file.txt']])
-            ->andThrow(new \OSS\Core\OssException('mock test'));
+            ->andThrow(new OssException('mock test'));
         $this->ossAdapter->deleteDirectory('path');
         $this->expectException(UnableToDeleteDirectory::class);
         $this->ossAdapter->deleteDirectory('path');
@@ -247,7 +243,7 @@ final class MockAdapterTest extends TestCase
     /**
      * @return \Iterator<string[]>
      */
-    public function provideVisibilities(): \Iterator
+    public function provideVisibilities(): Iterator
     {
         yield [Visibility::PUBLIC];
 
@@ -339,7 +335,7 @@ final class MockAdapterTest extends TestCase
             ->withArgs(['test', 'file.txt'])->andReturn(null);
         $this->ossAdapter->delete('file.txt');
         $this->legacyMock->shouldReceive('doesObjectExist')
-            ->withArgs(['test', 'file.txt'])->andThrow(new \OSS\Core\OssException('mock test'));
+            ->withArgs(['test', 'file.txt'])->andThrow(new OssException('mock test'));
         $this->expectException(UnableToCheckFileExistence::class);
         $this->ossAdapter->fileExists('file.txt');
     }
