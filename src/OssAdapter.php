@@ -710,7 +710,7 @@ class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvi
         }
 
         if (! isset($metadata['etag'])) {
-            throw new UnableToProvideChecksum('ETag header not available.', $path);
+            throw new UnableToProvideChecksum('etag header not available.', $path);
         }
 
         return strtolower(trim($metadata['etag'], '"'));
