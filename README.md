@@ -11,13 +11,13 @@
 
 > **Requires**
 > - **[PHP 8.0+](https://php.net/releases/)**
-> - **[Flysystem 3.6+](https://github.com/thephpleague/flysystem/releases)**
+> - **[Flysystem 3.10+](https://github.com/thephpleague/flysystem/releases)**
 
 ## Version Information
 
 | Version | Flysystem | PHP Version | Status                  |
 |:--------|:----------|:------------|:------------------------|
-| 3.x     | 3.6+      | >= 8.0      | Active support :rocket: |
+| 3.x     | 3.10+     | >= 8.0      | Active support :rocket: |
 | 2.x     | 2.x - 3.x | >= 7.2      | Active support          |
 | 1.x     | 1.x       | >= 7.2      | Active support          |
 
