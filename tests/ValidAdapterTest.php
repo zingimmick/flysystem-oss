@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Zing\Flysystem\Oss\Tests;
 
-use Iterator;
 use League\Flysystem\Config;
 use League\Flysystem\DirectoryAttributes;
 use League\Flysystem\FileAttributes;
@@ -139,7 +138,7 @@ final class ValidAdapterTest extends TestCase
     /**
      * @return \Iterator<string[]>
      */
-    public function provideVisibilities(): Iterator
+    public function provideVisibilities(): \Iterator
     {
         yield [Visibility::PUBLIC];
 

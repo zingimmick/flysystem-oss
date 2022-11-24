@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Zing\Flysystem\Oss;
 
-use DateTimeInterface;
 use GuzzleHttp\Psr7\Uri;
 use League\Flysystem\ChecksumAlgoIsNotSupported;
 use League\Flysystem\ChecksumProvider;
@@ -36,7 +35,6 @@ use League\MimeTypeDetection\MimeTypeDetector;
 use OSS\Core\OssException;
 use OSS\OssClient;
 use Psr\Http\Message\UriInterface;
-use Throwable;
 
 class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvider, TemporaryUrlGenerator
 {
@@ -626,11 +624,11 @@ class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvi
      */
     public function signUrl(
         string $path,
-        DateTimeInterface|int $expiration,
+        \DateTimeInterface|int $expiration,
         array $options = [],
         string $method = 'GET'
     ): string {
-        $expires = $expiration instanceof DateTimeInterface ? $expiration->getTimestamp() - time() : $expiration;
+        $expires = $expiration instanceof \DateTimeInterface ? $expiration->getTimestamp() - time() : $expiration;
 
         return $this->ossClient->signUrl(
             $this->bucket,
@@ -648,7 +646,7 @@ class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvi
      */
     public function getTemporaryUrl(
         string $path,
-        DateTimeInterface|int $expiration,
+        \DateTimeInterface|int $expiration,
         array $options = [],
         string $method = 'GET'
     ): string {
@@ -689,7 +687,7 @@ class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvi
 
         try {
             return $this->concatPathToUrl($this->normalizeHost(), $location);
-        } catch (Throwable $throwable) {
+        } catch (\Throwable $throwable) {
             throw UnableToGeneratePublicUrl::dueToError($path, $throwable);
         }
     }
@@ -716,7 +714,7 @@ class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvi
         return strtolower(trim($metadata['etag'], '"'));
     }
 
-    public function temporaryUrl(string $path, DateTimeInterface $expiresAt, Config $config): string
+    public function temporaryUrl(string $path, \DateTimeInterface $expiresAt, Config $config): string
     {
         try {
             return $this->ossClient->generatePresignedUrl(
@@ -726,7 +724,7 @@ class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvi
                 'GET',
                 (array) $config->get('gcp_signing_options', [])
             );
-        } catch (Throwable $throwable) {
+        } catch (\Throwable $throwable) {
             throw UnableToGenerateTemporaryUrl::dueToError($path, $throwable);
         }
     }

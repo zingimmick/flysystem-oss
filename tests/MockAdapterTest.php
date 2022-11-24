@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Zing\Flysystem\Oss\Tests;
 
-use Iterator;
 use League\Flysystem\Config;
 use League\Flysystem\DirectoryAttributes;
 use League\Flysystem\FileAttributes;
@@ -14,7 +13,6 @@ use League\Flysystem\UnableToCopyFile;
 use League\Flysystem\UnableToDeleteDirectory;
 use League\Flysystem\UnableToRetrieveMetadata;
 use League\Flysystem\Visibility;
-use Mockery;
 use OSS\Core\OssException;
 use OSS\Model\ObjectInfo;
 use OSS\Model\ObjectListInfo;
@@ -38,7 +36,7 @@ final class MockAdapterTest extends TestCase
     {
         parent::setUp();
 
-        $this->legacyMock = Mockery::mock(OssClient::class);
+        $this->legacyMock = \Mockery::mock(OssClient::class);
         $this->ossAdapter = new OssAdapter($this->legacyMock, 'test');
         $this->mockPutObject('fixture/read.txt', 'read-test');
         $this->ossAdapter->write('fixture/read.txt', 'read-test', new Config());
@@ -243,7 +241,7 @@ final class MockAdapterTest extends TestCase
     /**
      * @return \Iterator<string[]>
      */
-    public function provideVisibilities(): Iterator
+    public function provideVisibilities(): \Iterator
     {
         yield [Visibility::PUBLIC];
 
