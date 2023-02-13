@@ -397,8 +397,15 @@ final class MockAdapterTest extends TestCase
     {
         $this->legacyMock->shouldReceive('listObjects')
             ->withArgs([
-                'test', ['prefix' => 'path/', 'max-keys' => 1000, 'delimiter' => '/', 'marker' => '']
-            ])->andReturn(new ObjectListInfo('test', 'path/', '', '', '1000', '/', null, [], [new PrefixInfo('path/')]));
+                'test', [
+                    'prefix' => 'path/',
+                    'max-keys' => 1000,
+                    'delimiter' => '/',
+                    'marker' => '',
+                ],
+            ])->andReturn(
+                new ObjectListInfo('test', 'path/', '', '', '1000', '/', null, [], [new PrefixInfo('path/')])
+            );
         $this->legacyMock->shouldReceive('getObjectMeta')
             ->withArgs(['test', 'path/'])->andReturn([
                 'ContentLength' => 0,
