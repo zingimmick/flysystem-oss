@@ -21,22 +21,22 @@ final class ValidAdapterTest extends TestCase
 
     private function getKey(): string
     {
-        return (string) getenv('ALIBABA_CLOUD_KEY') ?: '';
+        return (string) getenv('OSS_KEY') ?: '';
     }
 
     private function getSecret(): string
     {
-        return (string) getenv('ALIBABA_CLOUD_SECRET') ?: '';
+        return (string) getenv('OSS_SECRET') ?: '';
     }
 
     private function getBucket(): string
     {
-        return (string) getenv('ALIBABA_CLOUD_BUCKET') ?: '';
+        return (string) getenv('OSS_BUCKET') ?: '';
     }
 
     private function getEndpoint(): string
     {
-        return (string) getenv('ALIBABA_CLOUD_ENDPOINT') ?: 'oss-cn-shanghai.aliyuncs.com';
+        return (string) getenv('OSS_ENDPOINT') ?: 'oss-cn-shanghai.aliyuncs.com';
     }
 
     protected function setUp(): void

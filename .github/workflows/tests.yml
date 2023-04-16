@@ -45,9 +45,9 @@ jobs:
 
       - name: Execute tests
         env:
-          ALIBABA_CLOUD_KEY: ${{ secrets.ALIBABA_CLOUD_KEY }}
-          ALIBABA_CLOUD_SECRET: ${{ secrets.ALIBABA_CLOUD_SECRET }}
-          ALIBABA_CLOUD_BUCKET: ${{ secrets.ALIBABA_CLOUD_BUCKET }}
+          OSS_KEY: ${{ secrets.OSS_KEY }}
+          OSS_SECRET: ${{ secrets.OSS_SECRET }}
+          OSS_BUCKET: ${{ secrets.OSS_BUCKET }}
           MOCK: ${{ matrix.mock }}
         run: composer run-script test:phpunit -- --coverage-clover coverage.xml
 
