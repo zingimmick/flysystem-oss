@@ -9,10 +9,7 @@ use League\Flysystem\Config;
 use OSS\OssClient;
 use Zing\Flysystem\Oss\OssAdapter;
 
-/**
- * @internal
- */
-final class ValidAdapterTest extends TestCase
+class ValidAdapterTest extends TestCase
 {
     /**
      * @var \Zing\Flysystem\Oss\OssAdapter
@@ -29,14 +26,19 @@ final class ValidAdapterTest extends TestCase
         return (string) getenv('OSS_SECRET') ?: '';
     }
 
-    private function getBucket(): string
+    protected function getBucket(): string
     {
         return (string) getenv('OSS_BUCKET') ?: '';
     }
 
-    private function getEndpoint(): string
+    protected function getEndpoint(): string
     {
         return (string) getenv('OSS_ENDPOINT') ?: 'oss-cn-shanghai.aliyuncs.com';
+    }
+
+    protected function isBucketEndpoint(): bool
+    {
+        return false;
     }
 
     protected function setUp(): void
@@ -59,7 +61,8 @@ final class ValidAdapterTest extends TestCase
         $this->ossAdapter = new OssAdapter(new OssClient(
             $config['key'],
             $config['secret'],
-            $config['endpoint']
+            $config['endpoint'],
+            $this->isBucketEndpoint()
         ), $this->getBucket(), '', [
             'default_visibility' => AdapterInterface::VISIBILITY_PUBLIC,
         ]);
