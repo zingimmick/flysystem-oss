@@ -274,7 +274,7 @@ class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvi
             throw UnableToRetrieveMetadata::visibility($path, $ossException->getMessage(), $ossException);
         }
 
-            $visibility = $this->visibilityConverter->aclToVisibility($result);
+        $visibility = $this->visibilityConverter->aclToVisibility($result);
 
         return new FileAttributes($path, null, $visibility);
     }
