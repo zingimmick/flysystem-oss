@@ -268,7 +268,7 @@ class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvi
 
     public function visibility(string $path): FileAttributes
     {
-        try {
+    try {
             $result = $this->ossClient->getObjectAcl($this->bucket, $this->pathPrefixer->prefixPath($path));
         } catch (OssException $ossException) {
             throw UnableToRetrieveMetadata::visibility($path, $ossException->getMessage(), $ossException);
