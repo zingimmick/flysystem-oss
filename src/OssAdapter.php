@@ -268,13 +268,13 @@ class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvi
 
     public function visibility(string $path): FileAttributes
     {
-    try {
+        try {
             $result = $this->ossClient->getObjectAcl($this->bucket, $this->pathPrefixer->prefixPath($path));
         } catch (OssException $ossException) {
             throw UnableToRetrieveMetadata::visibility($path, $ossException->getMessage(), $ossException);
         }
 
-        $visibility = $this->visibilityConverter->aclToVisibility($result);
+            $visibility = $this->visibilityConverter->aclToVisibility($result);
 
         return new FileAttributes($path, null, $visibility);
     }
@@ -410,9 +410,13 @@ class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvi
         $extracted = [];
 
         foreach (self::EXTRA_METADATA_FIELDS as $field) {
-            if (isset($metadata[$field]) && $metadata[$field] !== '') {
-                $extracted[$field] = $metadata[$field];
+            if (! isset($metadata[$field])) {
+                continue;
             }
+            if ($metadata[$field] === '') {
+                continue;
+            }
+            $extracted[$field] = $metadata[$field];
         }
 
         return $extracted;
@@ -468,7 +472,7 @@ class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvi
     public function listDirObjects(string $dirname = '', bool $recursive = false): array
     {
         $prefix = trim($this->pathPrefixer->prefixPath($dirname), '/');
-        $prefix = empty($prefix) ? '' : $prefix . '/';
+        $prefix = $prefix === '' ? '' : $prefix . '/';
 
         $nextMarker = '';
 
@@ -505,7 +509,7 @@ class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvi
     private function processObjects(array $result, ?array $objects, string $dirname): array
     {
         $result['objects'] = [];
-        if (! empty($objects)) {
+        if ($objects !== null && $objects !== []) {
             foreach ($objects as $object) {
                 $result['objects'][] = [
                     'prefix' => $dirname,
@@ -531,7 +535,7 @@ class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvi
      */
     private function processPrefixes(array $result, ?array $prefixes): array
     {
-        if (! empty($prefixes)) {
+        if ($prefixes !== null && $prefixes !== []) {
             foreach ($prefixes as $prefix) {
                 $result['prefix'][] = $prefix->getPrefix();
             }
