@@ -23,7 +23,6 @@ return static function (RectorConfig $rectorConfig): void {
             RenameParamToMatchTypeRector::class,
             AddSeeTestAnnotationRector::class,
             FinalizeClassesWithoutChildrenRector::class,
-            RepeatedLiteralToClassConstantRector::class,
             PrivatizeLocalGetterToPropertyRector::class,
         ]
     );
