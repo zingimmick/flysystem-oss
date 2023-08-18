@@ -120,7 +120,7 @@ final class InvalidAdapterTest extends TestCase
     public function testListContents(): void
     {
         $this->expectException(OssException::class);
-        self::assertEmpty(iterator_to_array($this->ossAdapter->listContents('/', false)));
+        $this->assertEmpty(iterator_to_array($this->ossAdapter->listContents('/', false)));
     }
 
     public function testGetSize(): void
@@ -155,7 +155,7 @@ final class InvalidAdapterTest extends TestCase
         $ossAdapter = new OssAdapter($this->ossClient, self::CONFIG['bucket'], '', null, null, [
             'endpoint' => 'http://oss.cdn.com',
         ]);
-        self::assertSame('test', $ossAdapter->getBucket());
+        $this->assertSame('test', $ossAdapter->getBucket());
     }
 
     public function testSetBucket(): void
@@ -164,7 +164,7 @@ final class InvalidAdapterTest extends TestCase
             'endpoint' => 'http://oss.cdn.com',
         ]);
         $ossAdapter->setBucket('new-bucket');
-        self::assertSame('new-bucket', $ossAdapter->getBucket());
+        $this->assertSame('new-bucket', $ossAdapter->getBucket());
     }
 
     public function testGetUrl(): void
@@ -172,7 +172,7 @@ final class InvalidAdapterTest extends TestCase
         $ossAdapter = new OssAdapter($this->ossClient, self::CONFIG['bucket'], '', null, null, [
             'endpoint' => 'http://oss.cdn.com',
         ]);
-        self::assertSame('http://test.oss.cdn.com/test', $ossAdapter->getUrl('test'));
+        $this->assertSame('http://test.oss.cdn.com/test', $ossAdapter->getUrl('test'));
     }
 
     public function testGetClient(): void
@@ -180,8 +180,8 @@ final class InvalidAdapterTest extends TestCase
         $ossAdapter = new OssAdapter($this->ossClient, self::CONFIG['bucket'], '', null, null, [
             'endpoint' => 'http://oss.cdn.com',
         ]);
-        self::assertSame($this->ossClient, $ossAdapter->getClient());
-        self::assertSame($this->ossClient, $ossAdapter->kernel());
+        $this->assertSame($this->ossClient, $ossAdapter->getClient());
+        $this->assertSame($this->ossClient, $ossAdapter->kernel());
     }
 
     public function testGetUrlWithoutSchema(): void
@@ -189,7 +189,7 @@ final class InvalidAdapterTest extends TestCase
         $ossAdapter = new OssAdapter($this->ossClient, self::CONFIG['bucket'], '', null, null, [
             'endpoint' => 'oss.cdn.com',
         ]);
-        self::assertSame('https://test.oss.cdn.com/test', $ossAdapter->getUrl('test'));
+        $this->assertSame('https://test.oss.cdn.com/test', $ossAdapter->getUrl('test'));
     }
 
     public function testGetUrlWithoutEndpoint(): void
@@ -206,7 +206,7 @@ final class InvalidAdapterTest extends TestCase
             'endpoint' => 'https://oss.cdn.com',
             'url' => 'https://oss.cdn.com',
         ]);
-        self::assertSame('https://oss.cdn.com/test', $ossAdapter->getUrl('test'));
+        $this->assertSame('https://oss.cdn.com/test', $ossAdapter->getUrl('test'));
     }
 
     public function testGetUrlWithBucketEndpoint(): void
@@ -215,7 +215,7 @@ final class InvalidAdapterTest extends TestCase
             'endpoint' => 'https://oss.cdn.com',
             'bucket_endpoint' => true,
         ]);
-        self::assertSame('https://oss.cdn.com/test', $ossAdapter->getUrl('test'));
+        $this->assertSame('https://oss.cdn.com/test', $ossAdapter->getUrl('test'));
     }
 
     public function testGetTemporaryUrlWithUrl(): void
@@ -224,13 +224,13 @@ final class InvalidAdapterTest extends TestCase
             'endpoint' => 'https://oss.cdn.com',
             'temporary_url' => 'https://oss.cdn.com',
         ]);
-        self::assertStringStartsWith('https://oss.cdn.com/test', $ossAdapter->getTemporaryUrl('test', 10));
+        $this->assertStringStartsWith('https://oss.cdn.com/test', $ossAdapter->getTemporaryUrl('test', 10));
     }
 
     public function testDirectoryExists(): void
     {
         if (! class_exists(UnableToCheckDirectoryExistence::class)) {
-            self::markTestSkipped('Require League Flysystem v3');
+            $this->markTestSkipped('Require League Flysystem v3');
         }
 
         $this->expectException(UnableToCheckDirectoryExistence::class);
