@@ -72,7 +72,10 @@ final class OssAdapterTest extends FilesystemAdapterTestCase
         }
     }
 
-    public function testFetching_unknown_mime_type_of_a_file(): void
+    /**
+     * @test
+     */
+    public function fetching_unknown_mime_type_of_a_file(): void
     {
         $this->adapter()
             ->write('unknown-mime-type.md5', '', new Config());
