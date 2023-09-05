@@ -110,7 +110,7 @@ class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvi
         protected array $options = []
     ) {
         $this->pathPrefixer = new PathPrefixer($prefix);
-        $this->visibilityConverter = $visibility ?: new PortableVisibilityConverter();
+        $this->visibilityConverter = $visibility?: new PortableVisibilityConverter();
         $this->mimeTypeDetector = $mimeTypeDetector ?: new FinfoMimeTypeDetector();
     }
 
