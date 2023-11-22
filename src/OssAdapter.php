@@ -30,6 +30,7 @@ use League\Flysystem\UnableToSetVisibility;
 use League\Flysystem\UnableToWriteFile;
 use League\Flysystem\UrlGeneration\PublicUrlGenerator;
 use League\Flysystem\UrlGeneration\TemporaryUrlGenerator;
+use League\Flysystem\Visibility;
 use League\MimeTypeDetection\FinfoMimeTypeDetector;
 use League\MimeTypeDetection\MimeTypeDetector;
 use OSS\Core\OssException;
@@ -200,6 +201,21 @@ class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvi
 
     public function copy(string $source, string $destination, Config $config): void
     {
+        try {
+            /** @var string|null $visibility */
+            $visibility = $config->get(Config::OPTION_VISIBILITY);
+            if ($visibility === null && $config->get('retain_visibility', true)) {
+                $visibility = $this->visibility($source)
+                    ->visibility();
+            }
+        } catch (FilesystemOperationFailed $filesystemOperationFailed) {
+            throw UnableToCopyFile::fromLocationTo($source, $destination, $filesystemOperationFailed);
+        }
+
+        $config = $config->withDefaults([
+            Config::OPTION_VISIBILITY => $visibility ?: Visibility::PRIVATE,
+        ]);
+
         try {
             $this->ossClient->copyObject(
                 $this->bucket,

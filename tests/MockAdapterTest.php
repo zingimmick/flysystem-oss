@@ -72,11 +72,35 @@ final class MockAdapterTest extends TestCase
         $this->mockPutObject('file.txt', 'write');
         $this->ossAdapter->write('file.txt', 'write', new Config());
         $this->legacyMock->shouldReceive('copyObject')
-            ->withArgs(['test', 'file.txt', 'test', 'copy.txt', []])->andReturn(null);
+            ->withArgs(['test', 'file.txt', 'test', 'copy.txt', [
+                'headers' => [
+                    OssClient::OSS_OBJECT_ACL => OssClient::OSS_ACL_TYPE_PUBLIC_READ,
+                ],
+            ],
+            ])->andReturn(null);
         $this->mockGetVisibility('file.txt', Visibility::PUBLIC);
         $this->ossAdapter->copy('file.txt', 'copy.txt', new Config());
         $this->mockGetObject('copy.txt', 'write');
         $this->assertSame('write', $this->ossAdapter->read('copy.txt'));
+    }
+
+    public function testCopyWithoutRetainVisibility(): void
+    {
+        $this->mockPutObject('file.txt', 'write');
+        $this->ossAdapter->write('file.txt', 'write', new Config());
+        $this->legacyMock->shouldReceive('copyObject')
+            ->withArgs(['test', 'file.txt', 'test', 'copy.txt', [
+                'headers' => [
+                    OssClient::OSS_OBJECT_ACL => OssClient::OSS_ACL_TYPE_PRIVATE,
+                ],
+            ],
+            ])->andReturn(null);
+        $this->mockGetVisibility('file.txt', Visibility::PUBLIC);
+        $this->ossAdapter->copy('file.txt', 'copy.txt', new Config([
+            'retain_visibility' => false,
+        ]));
+        $this->mockGetVisibility('copy.txt', Visibility::PRIVATE);
+        $this->assertSame(Visibility::PRIVATE, $this->ossAdapter->visibility('copy.txt')->visibility());
     }
 
     public function testCopyFailed(): void
@@ -84,7 +108,12 @@ final class MockAdapterTest extends TestCase
         $this->mockPutObject('file.txt', 'write');
         $this->ossAdapter->write('file.txt', 'write', new Config());
         $this->legacyMock->shouldReceive('copyObject')
-            ->withArgs(['test', 'file.txt', 'test', 'copy.txt', []])->andThrow(new OssException('mock test'));
+            ->withArgs(['test', 'file.txt', 'test', 'copy.txt', [
+                'headers' => [
+                    OssClient::OSS_OBJECT_ACL => OssClient::OSS_ACL_TYPE_PUBLIC_READ,
+                ],
+            ],
+            ])->andThrow(new OssException('mock test'));
         $this->mockGetVisibility('file.txt', Visibility::PUBLIC);
         $this->expectException(UnableToCopyFile::class);
         $this->ossAdapter->copy('file.txt', 'copy.txt', new Config());
