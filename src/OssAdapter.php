@@ -22,6 +22,7 @@ use League\Flysystem\UnableToDeleteDirectory;
 use League\Flysystem\UnableToDeleteFile;
 use League\Flysystem\UnableToGeneratePublicUrl;
 use League\Flysystem\UnableToGenerateTemporaryUrl;
+use League\Flysystem\UnableToListContents;
 use League\Flysystem\UnableToMoveFile;
 use League\Flysystem\UnableToProvideChecksum;
 use League\Flysystem\UnableToReadFile;
@@ -34,6 +35,7 @@ use League\Flysystem\Visibility;
 use League\MimeTypeDetection\FinfoMimeTypeDetector;
 use League\MimeTypeDetection\MimeTypeDetector;
 use OSS\Core\OssException;
+use OSS\Http\RequestCore_Exception;
 use OSS\OssClient;
 use Psr\Http\Message\UriInterface;
 
@@ -184,7 +186,7 @@ class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvi
                     $options
                 );
             }
-        } catch (OssException $ossException) {
+        } catch (OssException|RequestCore_Exception $ossException) {
             throw UnableToWriteFile::atLocation($path, $ossException->getMessage(), $ossException);
         }
     }
@@ -224,7 +226,7 @@ class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvi
                 $this->pathPrefixer->prefixPath($destination),
                 $this->createOptionsFromConfig($config)
             );
-        } catch (OssException $ossException) {
+        } catch (OssException|RequestCore_Exception $ossException) {
             throw UnableToCopyFile::fromLocationTo($source, $destination, $ossException);
         }
     }
@@ -233,7 +235,7 @@ class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvi
     {
         try {
             $this->ossClient->deleteObject($this->bucket, $this->pathPrefixer->prefixPath($path));
-        } catch (OssException $ossException) {
+        } catch (OssException|RequestCore_Exception $ossException) {
             throw UnableToDeleteFile::atLocation($path, $ossException->getMessage(), $ossException);
         }
     }
@@ -250,7 +252,7 @@ class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvi
             foreach (array_chunk($keys, 1000) as $items) {
                 $this->ossClient->deleteObjects($this->bucket, $items);
             }
-        } catch (OssException $ossException) {
+        } catch (OssException|RequestCore_Exception $ossException) {
             throw UnableToDeleteDirectory::atLocation($path, $ossException->getMessage(), $ossException);
         }
     }
@@ -277,7 +279,7 @@ class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvi
                 $this->pathPrefixer->prefixPath($path),
                 $this->visibilityConverter->visibilityToAcl($visibility)
             );
-        } catch (OssException $ossException) {
+        } catch (OssException|RequestCore_Exception $ossException) {
             throw UnableToSetVisibility::atLocation($path, $ossException->getMessage(), $ossException);
         }
     }
@@ -286,7 +288,10 @@ class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvi
     {
         try {
             $result = $this->ossClient->getObjectAcl($this->bucket, $this->pathPrefixer->prefixPath($path));
-        } catch (OssException $ossException) {
+            if ($result === null) {
+                throw UnableToRetrieveMetadata::visibility($path, 'The OSS server returns NULL.');
+            }
+        } catch (OssException|RequestCore_Exception $ossException) {
             throw UnableToRetrieveMetadata::visibility($path, $ossException->getMessage(), $ossException);
         }
 
@@ -298,8 +303,15 @@ class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvi
     public function fileExists(string $path): bool
     {
         try {
-            return $this->ossClient->doesObjectExist($this->bucket, $this->pathPrefixer->prefixPath($path));
-        } catch (OssException $ossException) {
+            $result = $this->ossClient->doesObjectExist($this->bucket, $this->pathPrefixer->prefixPath($path));
+            if ($result === null) {
+                throw new UnableToCheckFileExistence(
+                    sprintf('Unable to check existence for: %s. The OSS server returns NULL.', $path)
+                );
+            }
+
+            return $result;
+        } catch (OssException|RequestCore_Exception $ossException) {
             throw UnableToCheckFileExistence::forLocation($path, $ossException);
         }
     }
@@ -314,9 +326,14 @@ class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvi
                 'max-keys' => 1,
             ];
             $model = $this->ossClient->listObjects($this->bucket, $options);
+            if ($model === null) {
+                throw new UnableToCheckDirectoryExistence(
+                    sprintf('Unable to check existence for: %s. The OSS server returns NULL.', $path)
+                );
+            }
 
             return $model->getObjectList() !== [];
-        } catch (OssException $ossException) {
+        } catch (OssException|RequestCore_Exception $ossException) {
             throw UnableToCheckDirectoryExistence::forLocation($path, $ossException);
         }
     }
@@ -338,7 +355,7 @@ class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvi
             $this->ossClient->getObject($this->bucket, $this->pathPrefixer->prefixPath($path), [
                 OssClient::OSS_FILE_DOWNLOAD => $stream,
             ]);
-        } catch (OssException $ossException) {
+        } catch (OssException|RequestCore_Exception $ossException) {
             throw UnableToReadFile::fromLocation($path, $ossException->getMessage(), $ossException);
         }
 
@@ -377,7 +394,7 @@ class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvi
         try {
             /** @var array{key?: string, prefix: ?string, content-length?: string, size?: int, last-modified?: string, content-type?: string} $metadata */
             $metadata = $this->ossClient->getObjectMeta($this->bucket, $this->pathPrefixer->prefixPath($path));
-        } catch (OssException $ossException) {
+        } catch (OssException|RequestCore_Exception $ossException) {
             throw UnableToRetrieveMetadata::create($path, $type, $ossException->getMessage(), $ossException);
         }
 
@@ -476,8 +493,13 @@ class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvi
     protected function getObject(string $path): string
     {
         try {
-            return $this->ossClient->getObject($this->bucket, $this->pathPrefixer->prefixPath($path));
-        } catch (OssException $ossException) {
+            $result = $this->ossClient->getObject($this->bucket, $this->pathPrefixer->prefixPath($path));
+            if ($result === null) {
+                throw UnableToReadFile::fromLocation($path, 'The OSS server returns NULL.');
+            }
+
+            return $result;
+        } catch (OssException|RequestCore_Exception $ossException) {
             throw UnableToReadFile::fromLocation($path, $ossException->getMessage(), $ossException);
         }
     }
@@ -504,6 +526,12 @@ class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvi
         while (true) {
             $options['marker'] = $nextMarker;
             $model = $this->ossClient->listObjects($this->bucket, $options);
+            if ($model === null) {
+                throw new UnableToListContents(sprintf("Unable to list contents for '%s', ", $prefix)
+                    . ($recursive ? 'deep' : 'shallow') . " listing\n\n"
+                    . 'Reason: The OSS server returns NULL.');
+            }
+
             $nextMarker = $model->getNextMarker();
             $objects = $model->getObjectList();
             $prefixes = $model->getPrefixList();
