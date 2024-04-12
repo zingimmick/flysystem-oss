@@ -19,7 +19,7 @@ class FileUrl extends AbstractPlugin
     /**
      * handle.
      *
-     * @param $path
+     * @param mixed $path
      *
      * @return mixed
      */

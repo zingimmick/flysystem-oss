@@ -52,130 +52,132 @@ final class InvalidAdapterTest extends TestCase
 
     public function testUpdate(): void
     {
-        self::assertFalse($this->ossAdapter->update('file.txt', 'test', new Config()));
+        $this->assertFalse($this->ossAdapter->update('file.txt', 'test', new Config()));
     }
 
     public function testUpdateStream(): void
     {
-        self::assertFalse(
+        $this->assertFalse(
             $this->ossAdapter->updateStream('file.txt', $this->streamFor('test')->detach(), new Config())
         );
     }
 
     public function testCopy(): void
     {
-        self::assertFalse($this->ossAdapter->copy('file.txt', 'copy.txt'));
+        $this->assertFalse($this->ossAdapter->copy('file.txt', 'copy.txt'));
     }
 
     public function testCreateDir(): void
     {
-        self::assertFalse($this->ossAdapter->createDir('path', new Config()));
+        $this->assertFalse($this->ossAdapter->createDir('path', new Config()));
     }
 
     public function testSetVisibility(): void
     {
-        self::assertFalse($this->ossAdapter->setVisibility('file.txt', AdapterInterface::VISIBILITY_PUBLIC));
+        $this->assertFalse($this->ossAdapter->setVisibility('file.txt', AdapterInterface::VISIBILITY_PUBLIC));
     }
 
     public function testRename(): void
     {
-        self::assertFalse($this->ossAdapter->rename('from.txt', 'to.txt'));
+        $this->assertFalse($this->ossAdapter->rename('from.txt', 'to.txt'));
     }
 
     public function testDeleteDir(): void
     {
         $this->expectException(OssException::class);
-        self::assertFalse($this->ossAdapter->deleteDir('path'));
+        $this->assertFalse($this->ossAdapter->deleteDir('path'));
     }
 
     public function testWriteStream(): void
     {
-        self::assertFalse($this->ossAdapter->writeStream('file.txt', $this->streamFor('test')->detach(), new Config()));
+        $this->assertFalse(
+            $this->ossAdapter->writeStream('file.txt', $this->streamFor('test')->detach(), new Config())
+        );
     }
 
     public function testDelete(): void
     {
-        self::assertFalse($this->ossAdapter->delete('file.txt'));
+        $this->assertFalse($this->ossAdapter->delete('file.txt'));
     }
 
     public function testWrite(): void
     {
-        self::assertFalse($this->ossAdapter->write('file.txt', 'test', new Config()));
+        $this->assertFalse($this->ossAdapter->write('file.txt', 'test', new Config()));
     }
 
     public function testRead(): void
     {
-        self::assertFalse($this->ossAdapter->read('file.txt'));
+        $this->assertFalse($this->ossAdapter->read('file.txt'));
     }
 
     public function testReadStream(): void
     {
-        self::assertFalse($this->ossAdapter->readStream('file.txt'));
+        $this->assertFalse($this->ossAdapter->readStream('file.txt'));
     }
 
     public function testGetVisibility(): void
     {
-        self::assertFalse($this->ossAdapter->getVisibility('file.txt'));
+        $this->assertFalse($this->ossAdapter->getVisibility('file.txt'));
     }
 
     public function testGetMetadata(): void
     {
-        self::assertFalse($this->ossAdapter->getMetadata('file.txt'));
+        $this->assertFalse($this->ossAdapter->getMetadata('file.txt'));
     }
 
     public function testListContents(): void
     {
         $this->expectException(OssException::class);
-        self::assertEmpty($this->ossAdapter->listContents());
+        $this->assertEmpty($this->ossAdapter->listContents());
     }
 
     public function testGetSize(): void
     {
-        self::assertFalse($this->ossAdapter->getSize('file.txt'));
+        $this->assertFalse($this->ossAdapter->getSize('file.txt'));
     }
 
     public function testGetTimestamp(): void
     {
-        self::assertFalse($this->ossAdapter->getTimestamp('file.txt'));
+        $this->assertFalse($this->ossAdapter->getTimestamp('file.txt'));
     }
 
     public function testGetMimetype(): void
     {
-        self::assertFalse($this->ossAdapter->getMimetype('file.txt'));
+        $this->assertFalse($this->ossAdapter->getMimetype('file.txt'));
     }
 
     public function testHas(): void
     {
-        self::assertFalse($this->ossAdapter->has('file.txt'));
+        $this->assertFalse($this->ossAdapter->has('file.txt'));
     }
 
     public function testGetUrl(): void
     {
-        self::assertSame('https://test.oss-cn-shanghai.aliyuncs.com/file.txt', $this->ossAdapter->getUrl('file.txt'));
+        $this->assertSame('https://test.oss-cn-shanghai.aliyuncs.com/file.txt', $this->ossAdapter->getUrl('file.txt'));
     }
 
     public function testSignUrl(): void
     {
         $this->ossAdapter->setBucket('');
-        self::assertFalse($this->ossAdapter->signUrl('file.txt', 10, []));
+        $this->assertFalse($this->ossAdapter->signUrl('file.txt', 10, []));
     }
 
     public function testGetTemporaryUrl(): void
     {
         $this->ossAdapter->setBucket('');
-        self::assertFalse($this->ossAdapter->getTemporaryUrl('file.txt', 10, []));
+        $this->assertFalse($this->ossAdapter->getTemporaryUrl('file.txt', 10, []));
     }
 
     public function testSetBucket(): void
     {
-        self::assertSame('test', $this->ossAdapter->getBucket());
+        $this->assertSame('test', $this->ossAdapter->getBucket());
         $this->ossAdapter->setBucket('bucket');
-        self::assertSame('bucket', $this->ossAdapter->getBucket());
+        $this->assertSame('bucket', $this->ossAdapter->getBucket());
     }
 
     public function testGetClient(): void
     {
-        self::assertInstanceOf(OssClient::class, $this->ossAdapter->getClient());
+        $this->assertInstanceOf(OssClient::class, $this->ossAdapter->getClient());
     }
 
     public function testGetUrlWithUrl(): void
@@ -187,7 +189,7 @@ final class InvalidAdapterTest extends TestCase
         ]);
         $filesystem = new Filesystem($ossAdapter);
         $filesystem->addPlugin(new FileUrl());
-        self::assertSame('https://oss.cdn.com/test', $filesystem->getUrl('test'));
+        $this->assertSame('https://oss.cdn.com/test', $filesystem->getUrl('test'));
     }
 
     public function testGetUrlWithBucketEndpoint(): void
@@ -199,7 +201,7 @@ final class InvalidAdapterTest extends TestCase
         ]);
         $filesystem = new Filesystem($ossAdapter);
         $filesystem->addPlugin(new FileUrl());
-        self::assertSame('https://oss.cdn.com/test', $filesystem->getUrl('test'));
+        $this->assertSame('https://oss.cdn.com/test', $filesystem->getUrl('test'));
     }
 
     public function testGetTemporaryUrlWithUrl(): void
@@ -210,6 +212,6 @@ final class InvalidAdapterTest extends TestCase
         ]);
         $filesystem = new Filesystem($ossAdapter);
         $filesystem->addPlugin(new TemporaryUrl());
-        self::assertStringStartsWith('https://oss.cdn.com/test', (string) $filesystem->getTemporaryUrl('test', 10));
+        $this->assertStringStartsWith('https://oss.cdn.com/test', (string) $filesystem->getTemporaryUrl('test', 10));
     }
 }

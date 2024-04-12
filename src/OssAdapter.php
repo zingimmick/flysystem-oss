@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Zing\Flysystem\Oss;
 
-use DateTimeInterface;
 use GuzzleHttp\Psr7\Uri;
 use League\Flysystem\Adapter\AbstractAdapter;
 use League\Flysystem\AdapterInterface;
@@ -69,6 +68,7 @@ class OssAdapter extends AbstractAdapter
 
     /**
      * @var mixed[]|array<string, bool>|array<string, string>
+     *
      * @phpstan-var array{url?: string, temporary_url?: string, endpoint?: string, bucket_endpoint?: bool}
      */
     protected $options = [];
@@ -115,8 +115,8 @@ class OssAdapter extends AbstractAdapter
     }
 
     /**
-     * @param resource $resource
      * @param mixed $path
+     * @param resource $resource
      */
     public function writeStream($path, $resource, Config $config): bool
     {
@@ -194,8 +194,8 @@ class OssAdapter extends AbstractAdapter
     }
 
     /**
-     * @param $path
-     * @param $visibility
+     * @param mixed $path
+     * @param mixed $visibility
      *
      * @return array|false
      */
@@ -218,7 +218,7 @@ class OssAdapter extends AbstractAdapter
     }
 
     /**
-     * @param $path
+     * @param mixed $path
      *
      * @return array|false
      */
@@ -291,7 +291,7 @@ class OssAdapter extends AbstractAdapter
     }
 
     /**
-     * @param $path
+     * @param mixed $path
      *
      * @return array|false
      */
@@ -355,7 +355,7 @@ class OssAdapter extends AbstractAdapter
     public function listDirObjects(string $dirname = '', bool $recursive = false): array
     {
         $prefix = trim($this->applyPathPrefix($dirname), '/');
-        $prefix = empty($prefix) ? '' : $prefix . '/';
+        $prefix = $prefix === '' ? '' : $prefix . '/';
 
         $nextMarker = '';
 
@@ -392,7 +392,7 @@ class OssAdapter extends AbstractAdapter
     private function processObjects(array $result, ?array $objects, string $dirname): array
     {
         $result['objects'] = [];
-        if (! empty($objects)) {
+        if ($objects !== null && $objects !== []) {
             foreach ($objects as $object) {
                 $result['objects'][] = [
                     'prefix' => $dirname,
@@ -418,7 +418,7 @@ class OssAdapter extends AbstractAdapter
      */
     private function processPrefixes(array $result, ?array $prefixes): array
     {
-        if (! empty($prefixes)) {
+        if ($prefixes !== null && $prefixes !== []) {
             foreach ($prefixes as $prefix) {
                 $result['prefix'][] = $prefix->getPrefix();
             }
@@ -506,7 +506,7 @@ class OssAdapter extends AbstractAdapter
      */
     public function signUrl(string $path, $expiration, array $options = [], string $method = 'GET')
     {
-        $expires = $expiration instanceof DateTimeInterface ? $expiration->getTimestamp() - time() : $expiration;
+        $expires = $expiration instanceof \DateTimeInterface ? $expiration->getTimestamp() - time() : $expiration;
 
         try {
             return $this->client->signUrl(
@@ -617,7 +617,7 @@ class OssAdapter extends AbstractAdapter
     }
 
     /**
-     * @param $path
+     * @param mixed $path
      *
      * @return array|false
      */
@@ -627,7 +627,7 @@ class OssAdapter extends AbstractAdapter
     }
 
     /**
-     * @param $path
+     * @param mixed $path
      *
      * @return array|false
      */
@@ -637,7 +637,7 @@ class OssAdapter extends AbstractAdapter
     }
 
     /**
-     * @param $path
+     * @param mixed $path
      *
      * @return array|false
      */
@@ -647,7 +647,7 @@ class OssAdapter extends AbstractAdapter
     }
 
     /**
-     * @param $path
+     * @param mixed $path
      *
      * @return false|string[]
      */

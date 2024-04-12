@@ -10,7 +10,6 @@ use OSS\Model\ObjectInfo;
 use OSS\Model\ObjectListInfo;
 use OSS\Model\PrefixInfo;
 use OSS\OssClient;
-use Rector\Core\ValueObject\Visibility;
 use Zing\Flysystem\Oss\OssAdapter;
 
 /**
@@ -58,7 +57,7 @@ final class MockAdapterTest extends TestCase
         $this->ossAdapter->update('file.txt', 'update', new Config());
         $this->client->shouldReceive('getObject')
             ->withArgs(['test', 'file.txt'])->andReturn('update');
-        self::assertSame('update', $this->ossAdapter->read('file.txt')['contents']);
+        $this->assertSame('update', $this->ossAdapter->read('file.txt')['contents']);
     }
 
     public function testUpdateStream(): void
@@ -83,7 +82,7 @@ final class MockAdapterTest extends TestCase
         $this->ossAdapter->updateStream('file.txt', $stream, new Config());
         $this->client->shouldReceive('getObject')
             ->withArgs(['test', 'file.txt'])->andReturn('update');
-        self::assertSame('update', $this->ossAdapter->read('file.txt')['contents']);
+        $this->assertSame('update', $this->ossAdapter->read('file.txt')['contents']);
     }
 
     private function mockPutObject(string $path, $body, ?string $visibility = null): void
@@ -119,10 +118,10 @@ final class MockAdapterTest extends TestCase
                     'endpoint' => 'oss-cn-shanghai.aliyuncs.com',
                 ],
             ])->andReturn(null);
-        $this->mockGetVisibility('file.txt', Visibility::PUBLIC);
+        $this->mockGetVisibility('file.txt', AdapterInterface::VISIBILITY_PUBLIC);
         $this->ossAdapter->copy('file.txt', 'copy.txt');
         $this->mockGetObject('copy.txt', 'write');
-        self::assertSame('write', $this->ossAdapter->read('copy.txt')['contents']);
+        $this->assertSame('write', $this->ossAdapter->read('copy.txt')['contents']);
     }
 
     private function mockGetObject(string $path, string $body): void
@@ -185,7 +184,7 @@ final class MockAdapterTest extends TestCase
                 'HttpStatusCode' => 200,
                 'Reason' => 'OK',
             ]);
-        self::assertSame([], $this->ossAdapter->listContents('path'));
+        $this->assertSame([], $this->ossAdapter->listContents('path'));
     }
 
     public function testSetVisibility(): void
@@ -201,7 +200,7 @@ final class MockAdapterTest extends TestCase
         $this->client->shouldReceive('getObjectAcl')
             ->withArgs(['test', 'file.txt'])
             ->andReturns(OssClient::OSS_ACL_TYPE_PRIVATE, OssClient::OSS_ACL_TYPE_PUBLIC_READ);
-        self::assertSame(
+        $this->assertSame(
             AdapterInterface::VISIBILITY_PRIVATE,
             $this->ossAdapter->getVisibility('file.txt')['visibility']
         );
@@ -217,7 +216,7 @@ final class MockAdapterTest extends TestCase
             ]);
         $this->ossAdapter->setVisibility('file.txt', AdapterInterface::VISIBILITY_PUBLIC);
 
-        self::assertSame(
+        $this->assertSame(
             AdapterInterface::VISIBILITY_PUBLIC,
             $this->ossAdapter->getVisibility('file.txt')['visibility']
         );
@@ -231,11 +230,11 @@ final class MockAdapterTest extends TestCase
         $this->client->shouldReceive('doesObjectExist')
             ->once()
             ->withArgs(['test', 'from.txt'])->andReturn(true);
-        self::assertTrue($this->ossAdapter->has('from.txt'));
+        $this->assertTrue($this->ossAdapter->has('from.txt'));
         $this->client->shouldReceive('doesObjectExist')
             ->once()
             ->withArgs(['test', 'to.txt'])->andThrow(new \OSS\Core\OssException(''));
-        self::assertFalse($this->ossAdapter->has('to.txt'));
+        $this->assertFalse($this->ossAdapter->has('to.txt'));
         $this->client->shouldReceive('copyObject')
             ->withArgs([
                 'test', 'from.txt', 'test', 'to.txt', [
@@ -244,14 +243,14 @@ final class MockAdapterTest extends TestCase
             ])->andReturn(null);
         $this->client->shouldReceive('deleteObject')
             ->withArgs(['test', 'from.txt'])->andReturn(null);
-        $this->mockGetVisibility('from.txt', Visibility::PUBLIC);
+        $this->mockGetVisibility('from.txt', AdapterInterface::VISIBILITY_PUBLIC);
         $this->ossAdapter->rename('from.txt', 'to.txt');
         $this->client->shouldReceive('doesObjectExist')
             ->once()
             ->withArgs(['test', 'from.txt'])->andThrow(new \OSS\Core\OssException(''));
-        self::assertFalse($this->ossAdapter->has('from.txt'));
+        $this->assertFalse($this->ossAdapter->has('from.txt'));
         $this->mockGetObject('to.txt', 'write');
-        self::assertSame('write', $this->ossAdapter->read('to.txt')['contents']);
+        $this->assertSame('write', $this->ossAdapter->read('to.txt')['contents']);
         $this->client->shouldReceive('deleteObject')
             ->withArgs(['test', 'to.txt'])->andReturn(null);
         $this->ossAdapter->delete('to.txt');
@@ -297,7 +296,7 @@ final class MockAdapterTest extends TestCase
         $this->client->shouldReceive('doesObjectExist')
             ->once()
             ->withArgs(['test', 'path/file.txt/'])->andReturn(false);
-        self::assertTrue($this->ossAdapter->deleteDir('path'));
+        $this->assertTrue($this->ossAdapter->deleteDir('path'));
     }
 
     public function testWriteStream(): void
@@ -307,20 +306,20 @@ final class MockAdapterTest extends TestCase
         $this->mockPutObject('file.txt', $stream);
         $this->ossAdapter->writeStream('file.txt', $stream, new Config());
         $this->mockGetObject('file.txt', 'write');
-        self::assertSame('write', $this->ossAdapter->read('file.txt')['contents']);
+        $this->assertSame('write', $this->ossAdapter->read('file.txt')['contents']);
     }
 
     /**
      * @return \Iterator<string[]>
      */
-    public function provideVisibilities(): \Iterator
+    public static function provideWriteStreamWithVisibilityCases(): \Iterator
     {
         yield [AdapterInterface::VISIBILITY_PUBLIC];
 
         yield [AdapterInterface::VISIBILITY_PRIVATE];
     }
 
-    private function mockGetVisibility(string $path, $visibility): void
+    private function mockGetVisibility(string $path, string $visibility): void
     {
         $this->client->shouldReceive('getObjectAcl')
             ->withArgs(['test', $path])
@@ -330,9 +329,7 @@ final class MockAdapterTest extends TestCase
     }
 
     /**
-     * @dataProvider provideVisibilities
-     *
-     * @param $visibility
+     * @dataProvider provideWriteStreamWithVisibilityCases
      */
     public function testWriteStreamWithVisibility(string $visibility): void
     {
@@ -343,7 +340,7 @@ final class MockAdapterTest extends TestCase
             'visibility' => $visibility,
         ]));
         $this->mockGetVisibility('file.txt', $visibility);
-        self::assertSame($visibility, $this->ossAdapter->getVisibility('file.txt')['visibility']);
+        $this->assertSame($visibility, $this->ossAdapter->getVisibility('file.txt')['visibility']);
     }
 
     public function testWriteStreamWithExpires(): void
@@ -364,7 +361,7 @@ final class MockAdapterTest extends TestCase
             'Expires' => 20,
         ]));
         $this->mockGetObject('file.txt', 'write');
-        self::assertSame('write', $this->ossAdapter->read('file.txt')['contents']);
+        $this->assertSame('write', $this->ossAdapter->read('file.txt')['contents']);
     }
 
     public function testWriteStreamWithMimetype(): void
@@ -389,7 +386,7 @@ final class MockAdapterTest extends TestCase
                 'last-modified' => 'Mon, 31 May 2021 06:52:32 GMT',
                 'content-type' => 'image/png',
             ]);
-        self::assertSame('image/png', $this->ossAdapter->getMimetype('file.txt')['mimetype']);
+        $this->assertSame('image/png', $this->ossAdapter->getMimetype('file.txt')['mimetype']);
     }
 
     public function testDelete(): void
@@ -401,14 +398,14 @@ final class MockAdapterTest extends TestCase
         $this->client->shouldReceive('doesObjectExist')
             ->once()
             ->withArgs(['test', 'file.txt'])->andReturn(true);
-        self::assertTrue($this->ossAdapter->has('file.txt'));
+        $this->assertTrue($this->ossAdapter->has('file.txt'));
         $this->client->shouldReceive('deleteObject')
             ->withArgs(['test', 'file.txt'])->andReturn(null);
         $this->ossAdapter->delete('file.txt');
         $this->client->shouldReceive('doesObjectExist')
             ->once()
             ->withArgs(['test', 'file.txt'])->andThrow(new \OSS\Core\OssException(''));
-        self::assertFalse($this->ossAdapter->has('file.txt'));
+        $this->assertFalse($this->ossAdapter->has('file.txt'));
     }
 
     public function testWrite(): void
@@ -416,25 +413,28 @@ final class MockAdapterTest extends TestCase
         $this->mockPutObject('file.txt', 'write');
         $this->ossAdapter->write('file.txt', 'write', new Config());
         $this->mockGetObject('file.txt', 'write');
-        self::assertSame('write', $this->ossAdapter->read('file.txt')['contents']);
+        $this->assertSame('write', $this->ossAdapter->read('file.txt')['contents']);
     }
 
     public function testRead(): void
     {
         $this->client->shouldReceive('getObject')
             ->withArgs(['test', 'fixture/read.txt'])->andReturn('read-test');
-        self::assertSame('read-test', $this->ossAdapter->read('fixture/read.txt')['contents']);
+        $this->assertSame('read-test', $this->ossAdapter->read('fixture/read.txt')['contents']);
     }
 
     public function testReadStream(): void
     {
         $this->client->shouldReceive('getObject')
-            ->withArgs(static function ($bucket, $object, $options): bool {
+            ->withArgs(static function ($bucket, $object, array $options): bool {
                 fwrite($options[OssClient::OSS_FILE_DOWNLOAD], 'read-test');
 
                 return $bucket === 'test' && $object === 'fixture/read.txt';
             })->andReturn('');
-        self::assertSame('read-test', stream_get_contents($this->ossAdapter->readStream('fixture/read.txt')['stream']));
+        $this->assertSame(
+            'read-test',
+            stream_get_contents($this->ossAdapter->readStream('fixture/read.txt')['stream'])
+        );
     }
 
     public function testGetVisibility(): void
@@ -442,7 +442,7 @@ final class MockAdapterTest extends TestCase
         $this->client->shouldReceive('getObjectAcl')
             ->withArgs(['test', 'fixture/read.txt'])
             ->andReturn(OssClient::OSS_ACL_TYPE_PRIVATE);
-        self::assertSame(
+        $this->assertSame(
             AdapterInterface::VISIBILITY_PRIVATE,
             $this->ossAdapter->getVisibility('fixture/read.txt')['visibility']
         );
@@ -451,7 +451,7 @@ final class MockAdapterTest extends TestCase
     public function testGetMetadata(): void
     {
         $this->mockGetMetadata('fixture/read.txt');
-        self::assertIsArray($this->ossAdapter->getMetadata('fixture/read.txt'));
+        $this->assertIsArray($this->ossAdapter->getMetadata('fixture/read.txt'));
     }
 
     private function mockGetMetadata(string $path): void
@@ -515,7 +515,7 @@ final class MockAdapterTest extends TestCase
                 'HttpStatusCode' => 200,
                 'Reason' => 'OK',
             ]);
-        self::assertNotEmpty($this->ossAdapter->listContents('path'));
+        $this->assertNotEmpty($this->ossAdapter->listContents('path'));
         $this->client->shouldReceive('listObjects')
             ->withArgs(['test', [
                 'prefix' => 'path1/',
@@ -524,7 +524,7 @@ final class MockAdapterTest extends TestCase
                 'marker' => '',
             ],
             ])->andReturn(new ObjectListInfo('test', 'path1/', '', '', '1000', '/', null, [], []));
-        self::assertEmpty($this->ossAdapter->listContents('path1'));
+        $this->assertEmpty($this->ossAdapter->listContents('path1'));
         $this->mockPutObject('a/b/file.txt', 'test');
         $this->ossAdapter->write('a/b/file.txt', 'test', new Config());
         $this->client->shouldReceive('listObjects')
@@ -547,7 +547,7 @@ final class MockAdapterTest extends TestCase
             ], [new PrefixInfo('a/b/')]));
 
         $this->mockGetMetadata('a/b/file.txt');
-        self::assertSame([
+        $this->assertSame([
             [
                 'type' => 'file',
                 'mimetype' => null,
@@ -564,39 +564,39 @@ final class MockAdapterTest extends TestCase
     public function testGetSize(): void
     {
         $this->mockGetMetadata('fixture/read.txt');
-        self::assertSame(9, $this->ossAdapter->getSize('fixture/read.txt')['size']);
+        $this->assertSame(9, $this->ossAdapter->getSize('fixture/read.txt')['size']);
     }
 
     public function testGetTimestamp(): void
     {
         $this->mockGetMetadata('fixture/read.txt');
-        self::assertSame(1622443952, $this->ossAdapter->getTimestamp('fixture/read.txt')['timestamp']);
+        $this->assertSame(1622443952, $this->ossAdapter->getTimestamp('fixture/read.txt')['timestamp']);
     }
 
     public function testGetMimetype(): void
     {
         $this->mockGetMetadata('fixture/read.txt');
-        self::assertSame('text/plain', $this->ossAdapter->getMimetype('fixture/read.txt')['mimetype']);
+        $this->assertSame('text/plain', $this->ossAdapter->getMimetype('fixture/read.txt')['mimetype']);
     }
 
     public function testHas(): void
     {
         $this->client->shouldReceive('doesObjectExist')
             ->withArgs(['test', 'fixture/read.txt'])->andReturn(true);
-        self::assertTrue($this->ossAdapter->has('fixture/read.txt'));
+        $this->assertTrue($this->ossAdapter->has('fixture/read.txt'));
     }
 
     public function testSignUrl(): void
     {
         $this->client->shouldReceive('signUrl')
             ->withArgs(['test', 'fixture/read.txt', 10, 'GET', []])->andReturn('signed-url');
-        self::assertSame('signed-url', $this->ossAdapter->signUrl('fixture/read.txt', 10, []));
+        $this->assertSame('signed-url', $this->ossAdapter->signUrl('fixture/read.txt', 10, []));
     }
 
     public function testGetTemporaryUrl(): void
     {
         $this->client->shouldReceive('signUrl')
             ->withArgs(['test', 'fixture/read.txt', 10, 'GET', []])->andReturn('signed-url');
-        self::assertSame('signed-url', $this->ossAdapter->getTemporaryUrl('fixture/read.txt', 10, []));
+        $this->assertSame('signed-url', $this->ossAdapter->getTemporaryUrl('fixture/read.txt', 10, []));
     }
 }

@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Zing\Flysystem\Oss;
 
-use RuntimeException;
-
-class UnableToGetUrl extends RuntimeException
+class UnableToGetUrl extends \RuntimeException
 {
     public static function missingOption(string $option): self
     {

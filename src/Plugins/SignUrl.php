@@ -19,7 +19,7 @@ class SignUrl extends AbstractPlugin
     /**
      * handle.
      *
-     * @param $path
+     * @param mixed $path
      * @param \DateTimeInterface|int $expiration
      * @param mixed $method
      *
