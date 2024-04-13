@@ -1,7 +1,7 @@
 # Flysystem OSS
 <p align="center">
-<a href="https://github.com/zingimmick/flysystem-oss/actions"><img src="https://github.com/zingimmick/flysystem-oss/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://codecov.io/gh/zingimmick/flysystem-oss"><img src="https://codecov.io/gh/zingimmick/flysystem-oss/branch/master/graph/badge.svg" alt="Code Coverage" /></a>
+<a href="https://github.com/zingimmick/flysystem-oss/actions"><img src="https://github.com/zingimmick/flysystem-oss/actions/workflows/tests.yml/badge.svg?branch=1.x" alt="Build Status"></a>
+<a href="https://codecov.io/gh/zingimmick/flysystem-oss"><img src="https://codecov.io/gh/zingimmick/flysystem-oss/branch/1.x/graph/badge.svg" alt="Code Coverage" /></a>
 <a href="https://packagist.org/packages/zing/flysystem-oss"><img src="https://poser.pugx.org/zing/flysystem-oss/v/stable.svg" alt="Latest Stable Version"></a>
 <a href="https://packagist.org/packages/zing/flysystem-oss"><img src="https://poser.pugx.org/zing/flysystem-oss/downloads" alt="Total Downloads"></a>
 <a href="https://packagist.org/packages/zing/flysystem-oss"><img src="https://poser.pugx.org/zing/flysystem-oss/v/unstable.svg" alt="Latest Unstable Version"></a>
