@@ -18,10 +18,10 @@ final class OssAdapterTest extends FilesystemAdapterTestCase
     protected static function createFilesystemAdapter(): FilesystemAdapter
     {
         $config = [
-            'key' => (string) getenv('ALIBABA_CLOUD_KEY') ?: '',
-            'secret' => (string) getenv('ALIBABA_CLOUD_SECRET') ?: '',
-            'bucket' => (string) getenv('ALIBABA_CLOUD_BUCKET') ?: '',
-            'endpoint' => (string) getenv('ALIBABA_CLOUD_ENDPOINT') ?: 'oss-cn-shanghai.aliyuncs.com',
+            'key' => (string) getenv('OSS_KEY') ?: '',
+            'secret' => (string) getenv('OSS_SECRET') ?: '',
+            'bucket' => (string) getenv('OSS_BUCKET') ?: '',
+            'endpoint' => (string) getenv('OSS_ENDPOINT') ?: 'oss-cn-shanghai.aliyuncs.com',
             'path_style' => '',
             'region' => '',
         ];

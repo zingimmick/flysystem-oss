@@ -19,6 +19,7 @@ return static function (RectorConfig $rectorConfig): void {
     $rectorConfig->phpstanConfig(__DIR__ . '/phpstan.neon');
     $rectorConfig->skip(
         [
+            __DIR__ . '/tests/TestCase.php',
             RenameVariableToMatchMethodCallReturnTypeRector::class,
             RenameParamToMatchTypeRector::class,
             AddSeeTestAnnotationRector::class,
