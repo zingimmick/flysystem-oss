@@ -17,6 +17,7 @@ use League\Flysystem\UnableToSetVisibility;
 use League\Flysystem\UnableToWriteFile;
 use League\Flysystem\Visibility;
 use OSS\Core\OssException;
+use OSS\Credentials\StaticCredentialsProvider;
 use OSS\OssClient;
 use Zing\Flysystem\Oss\OssAdapter;
 use Zing\Flysystem\Oss\UnableToGetUrl;
@@ -26,18 +27,6 @@ use Zing\Flysystem\Oss\UnableToGetUrl;
  */
 final class InvalidAdapterTest extends TestCase
 {
-    /**
-     * @var array<string, string>
-     */
-    private const CONFIG = [
-        'key' => 'aW52YWxpZC1rZXk=',
-        'secret' => 'aW52YWxpZC1zZWNyZXQ=',
-        'bucket' => 'test',
-        'endpoint' => 'oss-cn-shanghai.aliyuncs.com',
-        'path_style' => '',
-        'region' => '',
-    ];
-
     private OssAdapter $ossAdapter;
 
     private OssClient $ossClient;
@@ -46,8 +35,15 @@ final class InvalidAdapterTest extends TestCase
     {
         parent::setUp();
 
-        $this->ossClient = new OssClient(self::CONFIG['key'], self::CONFIG['secret'], self::CONFIG['endpoint']);
-        $this->ossAdapter = new OssAdapter($this->ossClient, self::CONFIG['bucket'], '');
+        $config = [
+            'provider' => new StaticCredentialsProvider('aW52YWxpZC1rZXk=', 'aW52YWxpZC1zZWNyZXQ='),
+            'bucket' => 'test',
+            'endpoint' => 'oss-cn-shanghai.aliyuncs.com',
+            'path_style' => '',
+            'region' => '',
+        ];
+        $this->ossClient = new OssClient($config);
+        $this->ossAdapter = new OssAdapter($this->ossClient, $config['bucket'], '');
     }
 
     public function testCopy(): void
@@ -152,7 +148,7 @@ final class InvalidAdapterTest extends TestCase
 
     public function testBucket(): void
     {
-        $ossAdapter = new OssAdapter($this->ossClient, self::CONFIG['bucket'], '', null, null, [
+        $ossAdapter = new OssAdapter($this->ossClient, 'test', '', null, null, [
             'endpoint' => 'http://oss.cdn.com',
         ]);
         $this->assertSame('test', $ossAdapter->getBucket());
@@ -160,7 +156,7 @@ final class InvalidAdapterTest extends TestCase
 
     public function testSetBucket(): void
     {
-        $ossAdapter = new OssAdapter($this->ossClient, self::CONFIG['bucket'], '', null, null, [
+        $ossAdapter = new OssAdapter($this->ossClient, 'test', '', null, null, [
             'endpoint' => 'http://oss.cdn.com',
         ]);
         $ossAdapter->setBucket('new-bucket');
@@ -169,7 +165,7 @@ final class InvalidAdapterTest extends TestCase
 
     public function testGetUrl(): void
     {
-        $ossAdapter = new OssAdapter($this->ossClient, self::CONFIG['bucket'], '', null, null, [
+        $ossAdapter = new OssAdapter($this->ossClient, 'test', '', null, null, [
             'endpoint' => 'http://oss.cdn.com',
         ]);
         $this->assertSame('http://test.oss.cdn.com/test', $ossAdapter->getUrl('test'));
@@ -177,7 +173,7 @@ final class InvalidAdapterTest extends TestCase
 
     public function testGetClient(): void
     {
-        $ossAdapter = new OssAdapter($this->ossClient, self::CONFIG['bucket'], '', null, null, [
+        $ossAdapter = new OssAdapter($this->ossClient, 'test', '', null, null, [
             'endpoint' => 'http://oss.cdn.com',
         ]);
         $this->assertSame($this->ossClient, $ossAdapter->getClient());
@@ -186,7 +182,7 @@ final class InvalidAdapterTest extends TestCase
 
     public function testGetUrlWithoutSchema(): void
     {
-        $ossAdapter = new OssAdapter($this->ossClient, self::CONFIG['bucket'], '', null, null, [
+        $ossAdapter = new OssAdapter($this->ossClient, 'test', '', null, null, [
             'endpoint' => 'oss.cdn.com',
         ]);
         $this->assertSame('https://test.oss.cdn.com/test', $ossAdapter->getUrl('test'));
@@ -194,7 +190,7 @@ final class InvalidAdapterTest extends TestCase
 
     public function testGetUrlWithoutEndpoint(): void
     {
-        $ossAdapter = new OssAdapter($this->ossClient, self::CONFIG['bucket'], '');
+        $ossAdapter = new OssAdapter($this->ossClient, 'test', '');
         $this->expectException(UnableToGetUrl::class);
         $this->expectExceptionMessage('Unable to get url with option endpoint missing.');
         $ossAdapter->getUrl('test');
@@ -202,7 +198,7 @@ final class InvalidAdapterTest extends TestCase
 
     public function testGetUrlWithUrl(): void
     {
-        $ossAdapter = new OssAdapter($this->ossClient, self::CONFIG['bucket'], '', null, null, [
+        $ossAdapter = new OssAdapter($this->ossClient, 'test', '', null, null, [
             'endpoint' => 'https://oss.cdn.com',
             'url' => 'https://oss.cdn.com',
         ]);
@@ -211,7 +207,7 @@ final class InvalidAdapterTest extends TestCase
 
     public function testGetUrlWithBucketEndpoint(): void
     {
-        $ossAdapter = new OssAdapter($this->ossClient, self::CONFIG['bucket'], '', null, null, [
+        $ossAdapter = new OssAdapter($this->ossClient, 'test', '', null, null, [
             'endpoint' => 'https://oss.cdn.com',
             'bucket_endpoint' => true,
         ]);
@@ -220,7 +216,7 @@ final class InvalidAdapterTest extends TestCase
 
     public function testGetTemporaryUrlWithUrl(): void
     {
-        $ossAdapter = new OssAdapter($this->ossClient, self::CONFIG['bucket'], '', null, null, [
+        $ossAdapter = new OssAdapter($this->ossClient, 'test', '', null, null, [
             'endpoint' => 'https://oss.cdn.com',
             'temporary_url' => 'https://oss.cdn.com',
         ]);

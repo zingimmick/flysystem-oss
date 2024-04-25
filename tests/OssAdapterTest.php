@@ -7,6 +7,7 @@ namespace Zing\Flysystem\Oss\Tests;
 use League\Flysystem\AdapterTestUtilities\FilesystemAdapterTestCase;
 use League\Flysystem\Config;
 use League\Flysystem\FilesystemAdapter;
+use OSS\Credentials\StaticCredentialsProvider;
 use OSS\OssClient;
 use Zing\Flysystem\Oss\OssAdapter;
 
@@ -18,19 +19,16 @@ final class OssAdapterTest extends FilesystemAdapterTestCase
     protected static function createFilesystemAdapter(): FilesystemAdapter
     {
         $config = [
-            'key' => (string) getenv('OSS_KEY') ?: '',
-            'secret' => (string) getenv('OSS_SECRET') ?: '',
+            'provider' => new StaticCredentialsProvider((string) getenv('OSS_KEY') ?: '', (string) getenv(
+                'OSS_SECRET'
+            ) ?: ''),
             'bucket' => (string) getenv('OSS_BUCKET') ?: '',
             'endpoint' => (string) getenv('OSS_ENDPOINT') ?: 'oss-cn-shanghai.aliyuncs.com',
             'path_style' => '',
             'region' => '',
         ];
 
-        return new OssAdapter(new OssClient(
-            $config['key'],
-            $config['secret'],
-            $config['endpoint']
-        ), $config['bucket'] ?: '', 'github-test', null, null, [
+        return new OssAdapter(new OssClient($config), $config['bucket'] ?: '', 'github-test', null, null, [
             'endpoint' => $config['endpoint'],
         ]);
     }
