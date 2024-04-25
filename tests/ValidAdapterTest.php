@@ -9,6 +9,7 @@ use League\Flysystem\DirectoryAttributes;
 use League\Flysystem\FileAttributes;
 use League\Flysystem\StorageAttributes;
 use League\Flysystem\Visibility;
+use OSS\Credentials\StaticCredentialsProvider;
 use OSS\OssClient;
 use Zing\Flysystem\Oss\OssAdapter;
 
@@ -50,20 +51,15 @@ class ValidAdapterTest extends TestCase
         parent::setUp();
 
         $config = [
-            'key' => $this->getKey(),
-            'secret' => $this->getSecret(),
+            'provider' => new StaticCredentialsProvider($this->getKey(), $this->getSecret()),
             'bucket' => $this->getBucket(),
             'endpoint' => $this->getEndpoint(),
+            'cname' => $this->isBucketEndpoint(),
             'path_style' => '',
             'region' => '',
         ];
 
-        $this->ossAdapter = new OssAdapter(new OssClient(
-            $config['key'],
-            $config['secret'],
-            $config['endpoint'],
-            $this->isBucketEndpoint()
-        ), $this->getBucket());
+        $this->ossAdapter = new OssAdapter(new OssClient($config), $this->getBucket());
         $this->ossAdapter->write('fixture/read.txt', 'read-test', new Config());
     }
 

@@ -36,8 +36,7 @@ use Zing\Flysystem\Oss\OssAdapter;
 
 $prefix = '';
 $config = [
-    'key' => 'aW52YWxpZC1rZXk=',
-    'secret' => 'aW52YWxpZC1zZWNyZXQ=',
+    'provider' => new StaticCredentialsProvider('aW52YWxpZC1rZXk=', 'aW52YWxpZC1zZWNyZXQ='),
     'bucket' => 'test',
     'endpoint' => 'oss-cn-shanghai.aliyuncs.com',
 ];
@@ -49,7 +48,7 @@ $config['options'] = [
     'temporary_url' => '',
 ];
 
-$client = new OssClient($config['key'], $config['secret'], $config['endpoint']);
+$client = new OssClient($config);
 $adapter = new OssAdapter($client, $config['bucket'], $prefix, null, null, $config['options']);
 $flysystem = new Filesystem($adapter);
 ```
