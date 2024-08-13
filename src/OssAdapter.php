@@ -306,7 +306,7 @@ class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvi
             $result = $this->ossClient->doesObjectExist($this->bucket, $this->pathPrefixer->prefixPath($path));
             if ($result === null) {
                 throw new UnableToCheckFileExistence(
-                    sprintf('Unable to check existence for: %s. The OSS server returns NULL.', $path)
+                    \sprintf('Unable to check existence for: %s. The OSS server returns NULL.', $path)
                 );
             }
 
@@ -328,7 +328,7 @@ class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvi
             $model = $this->ossClient->listObjects($this->bucket, $options);
             if ($model === null) {
                 throw new UnableToCheckDirectoryExistence(
-                    sprintf('Unable to check existence for: %s. The OSS server returns NULL.', $path)
+                    \sprintf('Unable to check existence for: %s. The OSS server returns NULL.', $path)
                 );
             }
 
@@ -527,7 +527,7 @@ class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvi
             $options['marker'] = $nextMarker;
             $model = $this->ossClient->listObjects($this->bucket, $options);
             if ($model === null) {
-                throw new UnableToListContents(sprintf("Unable to list contents for '%s', ", $prefix)
+                throw new UnableToListContents(\sprintf("Unable to list contents for '%s', ", $prefix)
                     . ($recursive ? 'deep' : 'shallow') . " listing\n\n"
                     . 'Reason: The OSS server returns NULL.');
             }
@@ -662,7 +662,7 @@ class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvi
             $domain = $this->bucket . '.' . $domain;
         }
 
-        $domain = sprintf('%s://%s', $url['scheme'], $domain);
+        $domain = \sprintf('%s://%s', $url['scheme'], $domain);
 
         return rtrim($domain, '/') . '/';
     }
