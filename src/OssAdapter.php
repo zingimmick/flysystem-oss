@@ -193,6 +193,10 @@ class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvi
 
     public function move(string $source, string $destination, Config $config): void
     {
+        if ($source === $destination) {
+            return;
+        }
+
         try {
             $this->copy($source, $destination, $config);
             $this->delete($source);
@@ -203,6 +207,10 @@ class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvi
 
     public function copy(string $source, string $destination, Config $config): void
     {
+        if ($source === $destination) {
+            return;
+        }
+
         try {
             /** @var string|null $visibility */
             $visibility = $config->get(Config::OPTION_VISIBILITY);
