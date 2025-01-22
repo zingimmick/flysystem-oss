@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 <!-- changelog-linker -->
+## 3.2.1 - 2025-01-22
+
+<!-- Release notes generated using configuration in .github/release.yml at 3.x -->
+### What's Changed
+
+#### Other Changes
+
+* Test use credentials provider init client by @zingimmick in https://github.com/zingimmick/flysystem-oss/pull/75
+* Remove rules that were never registered by @zingimmick in https://github.com/zingimmick/flysystem-oss/pull/81
+* Support for PHP 8.4 by @zingimmick in https://github.com/zingimmick/flysystem-oss/pull/83
+* Update license copyright year(s) by @github-actions in https://github.com/zingimmick/flysystem-oss/pull/87
+
+**Full Changelog**: https://github.com/zingimmick/flysystem-oss/compare/3.2.0...3.2.1
+
 ## 3.2.0 - 2024-03-18
 
 <!-- Release notes generated using configuration in .github/release.yml at 3.x -->
