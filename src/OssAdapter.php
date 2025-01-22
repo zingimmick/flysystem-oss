@@ -759,6 +759,7 @@ class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvi
         }
 
         try {
+            /** @var array{etag?: string} $metadata */
             $metadata = $this->getMetadata($path, 'checksum')
                 ->extraMetadata();
         } catch (UnableToRetrieveMetadata $unableToRetrieveMetadata) {

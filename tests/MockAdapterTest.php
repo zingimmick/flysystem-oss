@@ -255,7 +255,6 @@ final class MockAdapterTest extends TestCase
         $this->ossAdapter->deleteDirectory('path');
         $this->expectException(UnableToDeleteDirectory::class);
         $this->ossAdapter->deleteDirectory('path');
-        $this->assertTrue(true);
     }
 
     public function testWriteStream(): void

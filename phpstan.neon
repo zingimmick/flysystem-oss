@@ -9,3 +9,5 @@ parameters:
     ignoreErrors:
         - '#unction GuzzleHttp\\Psr7\\stream_for not found.#'
         - "#Cannot access offset 'x-oss-object-acl' on mixed.#"
+        - '#Method Zing\\Flysystem\\Oss\\Tests\\TestCase::streamFor\(\) should return Psr\\Http\\Message\\StreamInterface but returns mixed.#'
+        - '#Parameter \#1 \$stream of function fwrite expects resource, mixed given.#'
