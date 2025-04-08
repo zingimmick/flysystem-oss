@@ -51,8 +51,8 @@ final class MockAdapterTest extends TestCase
             OssClient::OSS_CONTENT_TYPE => 'text/plain',
         ];
         if ($visibility !== null) {
-            $options[OssClient::OSS_HEADERS] =
-                [
+            $options[OssClient::OSS_HEADERS]
+                = [
                     OssClient::OSS_OBJECT_ACL => $visibility === Visibility::PUBLIC ? OssClient::OSS_ACL_TYPE_PUBLIC_READ : OssClient::OSS_ACL_TYPE_PRIVATE,
                 ];
         }
@@ -266,16 +266,6 @@ final class MockAdapterTest extends TestCase
         $this->assertSame('write', $this->ossAdapter->read('file.txt'));
     }
 
-    /**
-     * @return \Iterator<string[]>
-     */
-    public static function provideWriteStreamWithVisibilityCases(): \Iterator
-    {
-        yield [Visibility::PUBLIC];
-
-        yield [Visibility::PRIVATE];
-    }
-
     private function mockGetVisibility(string $path, string $visibility): void
     {
         $this->legacyMock->shouldReceive('getObjectAcl')
@@ -297,6 +287,16 @@ final class MockAdapterTest extends TestCase
         ]));
         $this->mockGetVisibility('file.txt', $visibility);
         $this->assertSame($visibility, $this->ossAdapter->visibility('file.txt')['visibility']);
+    }
+
+    /**
+     * @return \Iterator<string[]>
+     */
+    public static function provideWriteStreamWithVisibilityCases(): \Iterator
+    {
+        yield [Visibility::PUBLIC];
+
+        yield [Visibility::PRIVATE];
     }
 
     public function testWriteStreamWithExpires(): void
