@@ -18,6 +18,7 @@ use OSS\Model\ObjectInfo;
 use OSS\Model\ObjectListInfo;
 use OSS\Model\PrefixInfo;
 use OSS\OssClient;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Zing\Flysystem\Oss\OssAdapter;
 
 /**
@@ -278,6 +279,7 @@ final class MockAdapterTest extends TestCase
     /**
      * @dataProvider provideWriteStreamWithVisibilityCases
      */
+    #[DataProvider('provideWriteStreamWithVisibilityCases')]
     public function testWriteStreamWithVisibility(string $visibility): void
     {
         $contents = $this->streamForResource('write');
