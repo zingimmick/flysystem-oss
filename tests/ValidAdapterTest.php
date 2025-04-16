@@ -144,16 +144,6 @@ class ValidAdapterTest extends TestCase
     }
 
     /**
-     * @return \Iterator<string[]>
-     */
-    public static function provideVisibilities(): \Iterator
-    {
-        yield [Visibility::PUBLIC];
-
-        yield [Visibility::PRIVATE];
-    }
-
-    /**
      * @dataProvider provideVisibilities
      */
     public function testWriteStreamWithVisibility(string $visibility): void
@@ -290,6 +280,16 @@ class ValidAdapterTest extends TestCase
         ]));
         $this->ossAdapter->copy('fixture/private.txt', 'fixture/copied-private.txt', new Config());
         $this->assertSame($visibility, $this->ossAdapter->visibility('fixture/copied-private.txt')->visibility());
+    }
+
+    /**
+     * @return \Iterator<string[]>
+     */
+    public static function provideVisibilities(): \Iterator
+    {
+        yield [Visibility::PUBLIC];
+
+        yield [Visibility::PRIVATE];
     }
 
     public function testMovingAFileWithVisibility(): void
