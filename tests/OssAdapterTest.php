@@ -16,7 +16,7 @@ use Zing\Flysystem\Oss\OssAdapter;
  */
 final class OssAdapterTest extends FilesystemAdapterTestCase
 {
-    protected static function createFilesystemAdapter(): FilesystemAdapter
+    protected static  function createFilesystemAdapter(): FilesystemAdapter
     {
         $config = [
             'provider' => new StaticCredentialsProvider((string) getenv('OSS_KEY') ?: '', (string) getenv(
