@@ -41,24 +41,12 @@ use Psr\Http\Message\UriInterface;
 
 class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvider, TemporaryUrlGenerator
 {
-    /**
-     * @var string[]
-     */
     private const EXTRA_METADATA_FIELDS = ['x-oss-storage-class', OssClient::OSS_ETAG];
 
-    /**
-     * @var string
-     */
     private const DELIMITER = '/';
 
-    /**
-     * @var int
-     */
     private const MAX_KEYS = 1000;
 
-    /**
-     * @var string[]
-     */
     private const AVAILABLE_OPTIONS = [
         OssClient::OSS_REQUEST_PAYER,
         OssClient::OSS_OBJECT_ACL,
@@ -80,9 +68,6 @@ class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvi
         'x-oss-server-side-encryption-key-id',
     ];
 
-    /**
-     * @var string[]
-     */
     private const MUP_AVAILABLE_OPTIONS = [
         OssClient::OSS_CALLBACK,
         OssClient::OSS_CALLBACK_VAR,

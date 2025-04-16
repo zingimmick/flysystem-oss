@@ -9,14 +9,8 @@ use OSS\OssClient;
 
 class PortableVisibilityConverter implements VisibilityConverter
 {
-    /**
-     * @var string
-     */
     private const PUBLIC_ACL = OssClient::OSS_ACL_TYPE_PUBLIC_READ;
 
-    /**
-     * @var string
-     */
     private const PRIVATE_ACL = OssClient::OSS_ACL_TYPE_PRIVATE;
 
     public function __construct(
