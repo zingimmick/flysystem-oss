@@ -7,7 +7,6 @@ namespace Zing\Flysystem\Oss\Tests;
 use League\Flysystem\Config;
 use League\Flysystem\DirectoryAttributes;
 use League\Flysystem\FileAttributes;
-use League\Flysystem\StorageAttributes;
 use League\Flysystem\Visibility;
 use OSS\Credentials\StaticCredentialsProvider;
 use OSS\OssClient;
