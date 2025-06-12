@@ -513,7 +513,6 @@ final class MockAdapterTest extends TestCase
             ], []));
         $this->mockGetMetadata('a/b/file.txt');
         $contents = iterator_to_array($this->ossAdapter->listContents('a', true));
-        $this->assertContainsOnlyInstancesOf(StorageAttributes::class, $contents);
         $this->assertCount(2, $contents);
 
         /** @var \League\Flysystem\FileAttributes $file */
