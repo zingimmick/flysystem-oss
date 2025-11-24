@@ -7,6 +7,7 @@ use Rector\Naming\Rector\Assign\RenameVariableToMatchMethodCallReturnTypeRector;
 use Rector\Naming\Rector\ClassMethod\RenameParamToMatchTypeRector;
 use Rector\PHPUnit\CodeQuality\Rector\ClassMethod\ReplaceTestAnnotationWithPrefixedFunctionRector;
 use Rector\PHPUnit\Set\PHPUnitSetList;
+use Rector\Privatization\Rector\Class_\FinalizeTestCaseClassRector;
 use Rector\Privatization\Rector\MethodCall\PrivatizeLocalGetterToPropertyRector;
 use Rector\Set\ValueObject\LevelSetList;
 use Zing\CodingStandard\Set\RectorSetList;
@@ -20,6 +21,7 @@ return static function (RectorConfig $rectorConfig): void {
             __DIR__ . '/tests/TestCase.php',
             RenameVariableToMatchMethodCallReturnTypeRector::class,
             RenameParamToMatchTypeRector::class,
+            FinalizeTestCaseClassRector::class,
             PrivatizeLocalGetterToPropertyRector::class,
             ReplaceTestAnnotationWithPrefixedFunctionRector::class => [__DIR__ . '/tests/OssAdapterTest.php'],
         ]
