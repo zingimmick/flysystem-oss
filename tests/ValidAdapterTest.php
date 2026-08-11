@@ -10,6 +10,7 @@ use League\Flysystem\FileAttributes;
 use League\Flysystem\Visibility;
 use OSS\Credentials\StaticCredentialsProvider;
 use OSS\OssClient;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Zing\Flysystem\Oss\OssAdapter;
 
 class ValidAdapterTest extends TestCase
@@ -147,6 +148,7 @@ class ValidAdapterTest extends TestCase
     /**
      * @dataProvider provideVisibilities
      */
+    #[DataProvider('provideVisibilities')]
     public function testWriteStreamWithVisibility(string $visibility): void
     {
         $this->ossAdapter->writeStream('fixture/file.txt', $this->streamForResource('write'), new Config([
@@ -273,6 +275,7 @@ class ValidAdapterTest extends TestCase
     /**
      * @dataProvider provideVisibilities
      */
+    #[DataProvider('provideVisibilities')]
     public function testCopyWithVisibility(string $visibility): void
     {
         $this->ossAdapter->write('fixture/private.txt', 'private', new Config([

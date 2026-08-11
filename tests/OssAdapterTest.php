@@ -9,6 +9,7 @@ use League\Flysystem\Config;
 use League\Flysystem\FilesystemAdapter;
 use OSS\Credentials\StaticCredentialsProvider;
 use OSS\OssClient;
+use PHPUnit\Framework\Attributes\Test;
 use Zing\Flysystem\Oss\OssAdapter;
 
 /**
@@ -75,6 +76,7 @@ final class OssAdapterTest extends FilesystemAdapterTestCase
     /**
      * @test
      */
+    #[Test]
     public function fetching_unknown_mime_type_of_a_file(): void
     {
         $this->adapter()
