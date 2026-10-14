@@ -405,7 +405,7 @@ class OssAdapter implements FilesystemAdapter, PublicUrlGenerator, ChecksumProvi
      */
     private function mapObjectMetadata(array $metadata, ?string $path = null): StorageAttributes
     {
-        if ($path === null) {
+        if ($path === null){
             $path = $this->pathPrefixer->stripPrefix((string) ($metadata['key'] ?? $metadata['prefix']));
         }
 
