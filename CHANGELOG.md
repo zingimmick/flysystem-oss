@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 <!-- changelog-linker -->
+## 3.3.0 - 2026-11-27
+
+<!-- Release notes generated using configuration in .github/release.yml at 3.x -->
+### What's Changed
+
+#### Other Changes
+
+* Support for PHP 8.5 by @zingimmick in https://github.com/zingimmick/flysystem-oss/pull/98
+* Update license copyright year(s) by @github-actions[bot] in https://github.com/zingimmick/flysystem-oss/pull/101
+* Update guzzlehttp/psr7 requirement from ^1.7 || ^2.0 to ^1.7 || ^2.0 || ^3.0 by @dependabot[bot] in https://github.com/zingimmick/flysystem-oss/pull/109
+* Support for PHP 8.6 by @zingimmick in https://github.com/zingimmick/flysystem-oss/pull/112
+
+**Full Changelog**: https://github.com/zingimmick/flysystem-oss/compare/3.2.1...3.3.0
+
 ## 3.2.1 - 2025-01-22
 
 <!-- Release notes generated using configuration in .github/release.yml at 3.x -->
