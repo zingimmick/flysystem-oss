@@ -19,8 +19,6 @@ return static function (RectorConfig $rectorConfig): void {
     $rectorConfig->skip(
         [
             __DIR__ . '/tests/TestCase.php',
-            RenameVariableToMatchMethodCallReturnTypeRector::class,
-            RenameParamToMatchTypeRector::class,
             FinalizeTestCaseClassRector::class,
             PrivatizeLocalGetterToPropertyRector::class,
             ReplaceTestAnnotationWithPrefixedFunctionRector::class => [__DIR__ . '/tests/OssAdapterTest.php'],
